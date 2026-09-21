@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, 'SGREA | Hojas de Producción')}">
+
+<main class="app-main">
+    <style>
+        #tablaHojas .tabulator-row {
+            cursor: pointer;
+        }
+    </style>
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <h1 class="mb-0 fs-3">Hojas de Producción</h1>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row mb-3">
+
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                        </div>
+
+                        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                            <a th:href="@{/hojas-produccion/crear}" class="btn btn-primary">
+                                <i class="bi bi-plus-lg"></i>Nueva hoja
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div id="tablaHojas" class="p-3"></div>
+                </div>
+
+                <div class="card-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const hojasIniciales = /*[[${hojasProduccion}]]*/ [];
+    </script>
+    <script th:src="@{/js/sgrea/hojas.js}"></script>
+</main>
+</html>

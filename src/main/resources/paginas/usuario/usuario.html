@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, 'SGREA | Usuarios')}">
+
+<main class="app-main">
+    <style>#tablaUsuarios .fila-usuario { cursor: pointer; }</style>
+    <div class="app-content-header"><div class="container-fluid d-flex justify-content-between align-items-center"><h1 class="mb-0 fs-3">Usuarios</h1>
+        <button type="button" class="btn btn-primary" id="nuevoUsuario"><i class="bi bi-plus-lg"></i> Nuevo usuario</button></div></div>
+    <div class="app-content"><div class="container-fluid"><div class="card">
+        <div class="card-body"><div id="tablaUsuarios" class="table-responsive"></div></div>
+    </div></div></div>
+
+    <div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="modalUsuarioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header">
+            <h5 class="modal-title" id="modalUsuarioLabel">Nuevo usuario</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <form id="formUsuario" class="needs-validation" novalidate autocomplete="off"><div class="modal-body">
+                <input type="hidden" id="idUsuario">
+                <div class="row"><div class="col-md-6 mb-3"><label for="nombreUsuario" class="form-label">Nombre</label>
+                    <input type="text" id="nombreUsuario" class="form-control" maxlength="255" required><div class="invalid-feedback">El nombre es obligatorio.</div></div>
+                    <div class="col-md-6 mb-3"><label for="usernameUsuario" class="form-label">Username</label>
+                    <input type="text" id="usernameUsuario" class="form-control" maxlength="255" required><div class="invalid-feedback">El username es obligatorio.</div></div></div>
+                <div class="row"><div class="col-md-6 mb-3"><label for="passwordUsuario" class="form-label">Contraseña</label>
+                    <input type="password" id="passwordUsuario" class="form-control" minlength="8"><div class="invalid-feedback">Debe tener al menos 8 caracteres.</div></div>
+                    <div class="col-md-6 mb-3"><label for="rolUsuarioForm" class="form-label">Rol</label><select id="rolUsuarioForm" class="form-select" required>
+                        <option value="1">Administrador</option><option value="2">Supervisor</option><option value="3" selected>Operador</option></select></div></div>
+                <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="activoUsuario" checked><label class="form-check-label" for="activoUsuario">Usuario activo</label></div>
+                <label class="form-label">Bodegas asociadas</label><div id="tablaBodegasAlta" class="table-responsive"></div>
+                <div id="ayudaBodegasEdicion" class="form-text d-none">Las asociaciones se guardarán con la información del usuario.</div>
+            </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar</button></div></form>
+        </div></div>
+    </div>
+
+    <div class="modal fade" id="modalBodegasUsuario" tabindex="-1" aria-labelledby="modalBodegasUsuarioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg"><div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="modalBodegasUsuarioLabel">Bodegas del usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <div class="modal-body"><p class="text-muted">Selecciona las bodegas asociadas al usuario.</p>
+                <div id="tablaBodegasUsuario" class="table-responsive"></div></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="guardarBodegasUsuario"><i class="bi bi-save"></i> Guardar asociaciones</button></div>
+        </div></div>
+    </div>
+    <script th:src="@{/js/sgrea/usuario.js}"></script>
+</main>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, 'SGREA | Bodegas')}">
+
+<main class="app-main">
+    <style>#tablaBodegas .tabulator-row { cursor: pointer; }</style>
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <h1 class="mb-0 fs-3">Bodegas</h1>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header text-end">
+                    <button type="button" class="btn btn-primary" onclick="nuevaBodega()"><i class="bi bi-plus-lg"></i> Nueva bodega</button>
+                </div>
+                <div class="card-body p-0"><div id="tablaBodegas" class="p-3"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalBodega" tabindex="-1" aria-labelledby="modalBodegaLabel" aria-hidden="true">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalBodegaLabel">Nueva bodega</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="formBodega" class="needs-validation" novalidate autocomplete="off">
+                <div class="modal-body">
+                    <input type="hidden" id="idBodega">
+                    <div class="mb-3"><label for="nombreBodega" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="nombreBodega" maxlength="100" required>
+                        <div class="invalid-feedback">Captura un nombre de hasta 100 caracteres.</div></div>
+                    <div class="mb-3"><label for="descripcionBodega" class="form-label">Descripción:</label>
+                        <textarea class="form-control" id="descripcionBodega" maxlength="255" rows="4" required></textarea>
+                        <div class="invalid-feedback">Captura una descripción de hasta 255 caracteres.</div></div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarBodega()"><i class="bi bi-save"></i> Guardar</button></div>
+            </form>
+        </div></div>
+    </div>
+    <script th:inline="javascript">const bodegasIniciales = /*[[${bodegas}]]*/ [];</script>
+    <script th:src="@{/js/sgrea/bodegas.js}"></script>
+</main>
+</html>

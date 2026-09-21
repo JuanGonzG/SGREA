@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es" th:fragment="layout(content, pageTitle)">
+    <head th:fragment="head">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <!--Accessibility Meta Tags-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
+        <meta name="color-scheme" content="light"/>
+        <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)"/>
+        <!--Accessibility Features-->
+        <meta name="supported-color-schemes" content="light"/>
+        <link rel="preload" th:href="@{/css/adminlte.css}" as="style"/>
+        <!--Plugin(OverlayScrollbars)-->
+        <link rel="stylesheet" th:href="@{/css/overlayscrollbars.min.css}"/>
+        <!--Plugin(Bootstrap Icons)-->
+        <link rel="stylesheet" th:href="@{/css/bootstrap-icons.min.css}"/>
+        <!--Plugin(AdminLTE)-->
+        <link rel="stylesheet" th:href="@{/css/adminlte.css}">
+        <!--Plugin(Tabulator)-->
+        <link rel="stylesheet" th:href="@{/js/vendor/tabulator/tabulator_bootstrap5.min.css}">
+        <!--Plugin(Flatpickr)-->
+        <link rel="stylesheet" th:href="@{/js/vendor/flatpickr/flatpickr.min.css}">
+        <!--Plugin(Tom Select)-->
+        <link rel="stylesheet" th:href="@{/js/vendor/tom-select/tom-select.bootstrap5.min.css}">
+        <!--Plugin(SweetAlert2)-->
+        <link rel="stylesheet" th:href="@{/js/vendor/sweetalert2/sweetalert2.min.css}">
+        <script th:src="@{/js/alertas.js}"></script>
+        <style>
+            .navbar-nav > .user-menu > .nav-link {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .navbar-nav > .user-menu .user-image {
+                float: none;
+                order: 2;
+                margin: 0;
+            }
+
+            .user-header-custom {
+                color: #fff;
+                background-color: #0B2545;
+            }
+
+            .app-loading-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 2000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(255, 255, 255, .85);
+            }
+
+            .app-loading-box {
+                min-width: 260px;
+                padding: 2rem;
+                border-radius: .75rem;
+                background: #fff;
+                box-shadow: 0 .75rem 1.5rem rgba(0, 0, 0, .2);
+                font-size: 1.15rem;
+            }
+
+            .app-loading-box .spinner-border {
+                width: 4rem;
+                height: 4rem;
+                border-width: .4rem;
+            }
+
+            #tablaProductos .tabulator-placeholder-contents,
+            #tablaHojas .tabulator-placeholder-contents,
+            #tablaDetallesHoja .tabulator-placeholder-contents {
+                width: 100%;
+                margin: 1rem;
+                padding: 1rem;
+                color: #664d03;
+                background-color: #fff3cd;
+                border: 1px solid #ffecb5;
+                border-radius: .375rem;
+                text-align: center;
+                font-weight: 500;
+            }
+
+            .sidebar-brand {
+                height: 4.5rem;
+                padding: 0.5rem;
+            }
+
+            .sidebar-brand .brand-link {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .sidebar-brand .brand-link .brand-image {
+                float: none;
+                width: 100%;
+                height: 3.5rem;
+                max-width: 180px;
+                max-height: 3.5rem;
+                margin: 0;
+                object-fit: contain;
+            }
+
+            .brand-image-expanded {
+                display: none;
+            }
+
+            body:not(.sidebar-collapse) .sidebar-brand {
+                height: 5.5rem;
+            }
+
+            body:not(.sidebar-collapse) .brand-image-compact {
+                display: none;
+            }
+
+            body:not(.sidebar-collapse) .brand-image-expanded {
+                display: block;
+                width: 100%;
+                height: auto;
+                max-width: none;
+                max-height: none;
+            }
+
+            .sidebar-mini.sidebar-collapse:not(.sidebar-without-hover) .app-sidebar:hover .sidebar-brand {
+                height: 5.5rem;
+            }
+
+            .sidebar-mini.sidebar-collapse:not(.sidebar-without-hover) .app-sidebar:hover .brand-image-compact {
+                display: none;
+            }
+
+            .sidebar-mini.sidebar-collapse:not(.sidebar-without-hover) .app-sidebar:hover .brand-image-expanded {
+                display: block;
+                width: 100%;
+                height: auto;
+                max-width: none;
+                max-height: none;
+            }
+
+            .sidebar-custom {
+                background-color: #0B2545;
+            }
+        </style>
+        <title th:text="${pageTitle}">SGREA</title>
+        <!--Theme Init-->
+        <script>
+            const theme = 'light';
+
+            try {
+                localStorage.setItem('lte-theme', theme);
+            } catch {}
+
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.documentElement.style.colorScheme = theme;
+        </script>
+    </head>
+
+    <body class="layout-fixed sidebar-expand-lg sidebar-mini sidebar-collapse bg-body-tertiary">
+        <div id="appLoadingOverlay" class="app-loading-overlay d-none" role="status" aria-live="polite">
+            <div class="app-loading-box text-center">
+                <div class="spinner-border text-primary" role="presentation"></div>
+                <div id="appLoadingText" class="mt-2">Cargando...</div>
+                <span class="visually-hidden">Cargando contenido</span>
+            </div>
+        </div>
+        <div class="app-wrapper">
+            <!--Navbar (Arriba)-->
+            <nav class="app-header navbar navbar-expand bg-body shadow">
+                <div class="container-fluid">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" aria-label="Toggle sidebar">
+                                <i class="bi bi-list"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        <!--Menú Usuario-->
+                        <li class="nav-item dropdown user-menu">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                                <span class="d-none d-md-inline">Hola, <b th:text="${session.nombreUsuario}"></b></span>
+                                <img th:src="${session.idRol == 1} ? @{/img/img-admin.png} :
+                                                                (${session.idRol == 2} ? @{/img/img-super.png} : @{/img/img-oper.png})"
+                                     class="user-image rounded-circle shadow" th:alt="${session.nombreCompletoUsuario}"/>
+                            </a>
+                            <ul id="dd-usuario" class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+                                <li class="user-header user-header-custom">
+                                    <img th:src="${session.idRol == 1} ? @{/img/img-admin.png} :
+                                                                (${session.idRol == 2} ? @{/img/img-super.png} : @{/img/img-oper.png})"
+                                         class="rounded-circle shadow" th:alt="${session.nombreCompletoUsuario}"/>
+                                    <p>
+                                        <b><span th:text="${session.nombreCompletoUsuario}"></span></b>
+                                    </p>
+                                    <div class="input-group mb-1 mt-1">
+                                        <div class="input-group-text">
+                                            <span class="bi bi-person-badge-fill"></span>
+                                        </div>
+                                        <input th:value="${session.rolUsuario}" class="form-control" readonly/>
+                                    </div>
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-text">
+                                            <span class="bi bi-house-gear-fill"></span>
+                                        </div>
+                                        <input th:value="${session.nombreBodega}" class="form-control" readonly/>
+                                    </div>
+                                </li>
+                                <li class="user-footer">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <a th:href="@{/usuarios}" class="btn btn-secondary w-100">
+                                                <i class="bi bi-person-gear"></i> Ajustes
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a th:href="@{/logout}" class="btn btn-danger w-100">
+                                                <i class="bi bi-box-arrow-left"></i> Salir
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <!--Sidebar (Izquierda)-->
+            <aside class="app-sidebar sidebar-custom shadow" data-bs-theme="dark">
+                <div class="sidebar-brand">
+                    <a th:href="@{/}" class="brand-link">
+                        <img th:src="@{/img/logo-2.png}" alt="SGREA Logo" class="brand-image brand-image-compact opacity-75 shadow"/>
+                        <img th:src="@{/img/logo-hor-2.png}" alt="SGREA Logo" class="brand-image brand-image-expanded opacity-75 shadow"/>
+                    </a>
+                </div>
+                <div class="sidebar-wrapper">
+                    <nav class="mt-2" aria-label="Main navigation">
+                        <!--Menú-->
+                        <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" data-accordion="false" id="navigation">
+                            <li class="nav-header">CATÁLOGOS</li>
+                            <li class="nav-item">
+                                <a th:href="@{/bodega}" class="nav-link">
+                                    <i class="nav-icon bi bi-house-gear-fill"></i>
+                                    <p>Bodegas</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/productos/}" class="nav-link">
+                                    <i class="nav-icon bi bi-box-fill"></i>
+                                    <p>Productos</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a th:href="@{/conjunto}" class="nav-link">
+                                    <i class="nav-icon bi bi-upc-scan"></i>
+                                    <p>Conjuntos</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-header">Operación</li>
+                            <li class="nav-item">
+                                <a th:href="@{/hojas-produccion}" class="nav-link">
+                                    <i class="nav-icon bi bi-file-earmark-text-fill"></i>
+                                    <p>Hojas de producción</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
+            <main class="app-main" th:replace="${content}">
+                <!-- Aquí se insertará el contenido de cada página -->
+            </main>
+            <footer class="app-footer">
+                <strong>
+                    Copyright &copy; 2026&nbsp;
+                    <a href="https://www.google.com/" class="text-decoration-none">SGREA</a>.
+                </strong>
+                Todos los derechos reservados.
+            </footer>
+        </div>
+
+        <!--Plugin(OverlayScrollbars)-->
+        <script th:src="@{/js/overlayscrollbars.browser.es6.min.js}"></script>
+        <!--Plugin(popperjs for Bootstrap 5)-->
+        <script th:src="@{/js/popper.min.js}"></script>
+        <!--Plugin(Bootstrap 5)-->
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <!--Plugin(AdminLTE)-->
+        <script th:src="@{/js/adminlte.js}"></script>
+        <!--Plugin(Tabulator)-->
+        <script th:src="@{/js/vendor/tabulator/tabulator.min.js}"></script>
+        <!--Plugin(SweetAlert2)-->
+        <script th:src="@{/js/vendor/sweetalert2/sweetalert2.all.min.js}"></script>
+        <!--Plugin(Flatpickr)-->
+        <script th:src="@{/js/vendor/flatpickr/flatpickr.min.js}"></script>
+        <script th:src="@{/js/vendor/flatpickr/es.js}"></script>
+        <!--Plugin(Tom Select)-->
+        <script th:src="@{/js/vendor/tom-select/tom-select.complete.min.js}"></script>
+        <!--Loading Overlay API-->
+        <script th:src="@{/js/loading.js}"></script>
+        <!--Validaciones de formularios-->
+        <script th:src="@{/js/validaciones.js}"></script>
+        <!--OverlayScrollbars Configure-->
+        <script>
+            const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+            const Default = {
+              scrollbarTheme: 'os-theme-light',
+              scrollbarAutoHide: 'leave',
+              scrollbarClickScroll: true,
+            };
+            document.addEventListener('DOMContentLoaded', function () {
+              const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+
+              // Disable OverlayScrollbars on mobile devices to prevent touch interference
+              const isMobile = window.innerWidth <= 992;
+
+              if (
+                sidebarWrapper &&
+                OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined &&
+                !isMobile
+              ) {
+                OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+                  scrollbars: {
+                    theme: Default.scrollbarTheme,
+                    autoHide: Default.scrollbarAutoHide,
+                    clickScroll: Default.scrollbarClickScroll,
+                  },
+                });
+              }
+            });
+        </script>
+    </body>
+</html>

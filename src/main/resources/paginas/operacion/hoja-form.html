@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, ${hojaProduccion != null and hojaProduccion.idHoja != null ? 'SGREA | Editar hoja de producción' : 'SGREA | Nueva hoja de producción'})}">
+
+<main class="app-main"
+      th:attr="data-tipo-alerta=${tipoAlerta},data-mensaje-alerta=${mensajeAlerta},data-solo-lectura=${soloLectura}">
+    <style>
+        #formHoja .invalid-tooltip,
+        #formDetalle .invalid-tooltip {
+            position: static;
+            max-width: 100%;
+            margin-top: .25rem;
+        }
+    </style>
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <h1 class="mb-0 fs-3" th:text="${hojaProduccion != null and hojaProduccion.idHoja != null ? 'Editar hoja de producción' : 'Nueva hoja de producción'}">Detalle de Hoja</h1>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-sm-8">
+                    <small class="text-muted" th:text="${hojaProduccion != null and hojaProduccion.idHoja != null ? 'Actualiza la información general de la hoja.' : 'Registra la información general de la hoja.'}">
+                    </small>
+                </div>
+
+                <div class="col-sm-4 text-sm-end mt-2 mt-sm-0">
+                    <a href="/hojas-produccion" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Regresar
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        Información de la hoja
+                    </h3>
+                </div>
+
+                <form id="formHoja" class="needs-validation" method="post" autocomplete="off" th:action="@{/hojas-produccion}" novalidate>
+                    <div class="card-body">
+                        <input type="hidden" id="idHoja" name="idHoja" th:value="${hojaProduccion != null ? hojaProduccion.idHoja : ''}">
+                        <div class="row">
+                            <div class="col-md-8 mb-3 position-relative">
+                                <label for="nombreProyecto" class="form-label">
+                                    Proyecto <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="nombreProyecto"
+                                       name="nombreProyecto"
+                                       placeholder="Nombre del proyecto"
+                                       th:value="${hojaProduccion != null ? hojaProduccion.nombreProyecto : ''}"
+                                       th:readonly="${soloLectura}"
+                                       maxlength="100"
+                                       required>
+                                <div class="invalid-tooltip">
+                                    Captura el nombre del proyecto. El m&aacute;ximo es de 100 caracteres.
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3 position-relative">
+                                <label for="cliente" class="form-label">
+                                    Cliente <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="cliente"
+                                       name="cliente"
+                                       placeholder="Nombre del cliente"
+                                       th:value="${hojaProduccion != null ? hojaProduccion.cliente : ''}"
+                                       th:readonly="${soloLectura}"
+                                       maxlength="100"
+                                       required>
+                                <div class="invalid-tooltip">
+                                    Captura el nombre del cliente. El m&aacute;ximo es de 100 caracteres.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3 position-relative">
+                                <label for="fechaSalida" class="form-label">
+                                    Fecha de salida <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="fechaSalida"
+                                       name="fechaSalida"
+                                       placeholder="Selecciona fecha y hora"
+                                       th:value="${hojaProduccion != null and hojaProduccion.fechaSalida != null ? #temporals.format(hojaProduccion.fechaSalida, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                       th:readonly="${soloLectura}"
+                                       required>
+                                <div class="invalid-tooltip">
+                                    Captura la fecha de salida.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3 position-relative">
+                                <label for="fechaRegreso" class="form-label">
+                                    Fecha estimada de regreso
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="fechaRegreso"
+                                       name="fechaEstimadaRegreso"
+                                       placeholder="Selecciona fecha y hora"
+                                       th:readonly="${soloLectura}"
+                                       th:value="${hojaProduccion != null and hojaProduccion.fechaEstimadaRegreso != null ? #temporals.format(hojaProduccion.fechaEstimadaRegreso, 'yyyy-MM-dd''T''HH:mm') : ''}">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="estado" class="form-label">Estado</label>
+                                <select id="estado"
+                                        class="form-select"
+                                        disabled
+                                        aria-disabled="true">
+                                    <option th:each="estado : ${estadosHoja}"
+                                            th:value="${estado.idEstadoHoja}"
+                                            th:text="${estado.nombre}"
+                                            th:selected="${hojaProduccion != null and hojaProduccion.estadoHoja != null and hojaProduccion.estadoHoja.idEstadoHoja == estado.idEstadoHoja}">
+                                    </option>
+                                </select>
+                                <input type="hidden"
+                                       name="estadoHoja.idEstadoHoja"
+                                       th:value="${hojaProduccion != null and hojaProduccion.estadoHoja != null ? hojaProduccion.estadoHoja.idEstadoHoja : ''}">
+                                <small class="text-muted">
+                                    El estado será controlado por el flujo de operación.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer text-end">
+                        <button type="button"
+                                id="btnEliminarHoja"
+                                class="btn btn-danger me-2"
+                                th:if="${hojaProduccion != null and hojaProduccion.idHoja != null and hojaProduccion.estadoHoja != null and hojaProduccion.estadoHoja.idEstadoHoja == 1}">
+                            <i class="bi bi-trash me-1"></i>
+                            Eliminar hoja
+                        </button>
+                        <a href="/hojas-produccion" class="btn btn-secondary me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary" th:if="${!soloLectura}">
+                            <i class="bi bi-save me-1"></i>
+                            <span th:text="${hojaProduccion != null and hojaProduccion.idHoja != null ? 'Guardar cambios' : 'Guardar hoja'}">
+                                Guardar hoja
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="alert alert-warning"
+                 role="alert"
+                 th:if="${soloLectura}">
+                Esta hoja se encuentra en un estado que solo permite consulta.
+            </div>
+
+            <div class="card" th:if="${hojaProduccion != null and hojaProduccion.idHoja != null}">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="card-title">
+                                <i class="bi bi-list-check me-2"></i>
+                                Detalles de la hoja
+                            </h3>
+                        </div>
+
+                        <div>
+                            <button type="button" class="btn btn-primary" th:if="${!soloLectura}" id="btnAgregarDetalle">
+                                <i class="bi bi-plus-lg"></i>
+                                Agregar detalle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div id="detalleHojaTablaContenedor" class="table-responsive">
+                        <div id="tablaDetallesHoja" class="p-3"></div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div id="detalleHojaResumen" class="row">
+                        <div class="col-md-6">
+                            <span class="text-muted">
+                                Productos solicitados:
+                                <strong id="detalleHojaTotalProductos" th:text="${#lists.size(detallesHoja)}">0</strong>
+                            </span>
+                        </div>
+
+                        <div class="col-md-6 text-md-end">
+                            <span class="text-muted">
+                                Total de piezas solicitadas:
+                                <strong id="detalleHojaTotalPiezas" th:text="${#aggregates.sum(detallesHoja.![cantidadSolicitada])}">0</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" th:if="${hojaProduccion != null and hojaProduccion.idHoja != null and !soloLectura}" id="modalDetalle" tabindex="-1" aria-labelledby="modalDetalleLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDetalleLabel">
+                        Agregar detalle
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <form id="formDetalle" class="needs-validation" autocomplete="off" novalidate>
+                    <div class="modal-body">
+                        <input type="hidden" id="idDetalle" name="idDetalle">
+                        <input type="hidden" id="idHojaDetalle" name="idHoja" th:value="${hojaProduccion != null ? hojaProduccion.idHoja : ''}">
+
+                        <div class="mb-3 position-relative">
+                            <label for="producto" class="form-label">
+                                Producto <span class="text-danger">*</span>
+                            </label>
+
+                            <select class="form-select" id="producto" name="idProducto" required></select>
+                            <div class="invalid-tooltip">Selecciona un producto.</div>
+                        </div>
+
+                        <div class="mb-3 position-relative">
+                            <label for="cantidadSolicitada" class="form-label">
+                                Cantidad solicitada <span class="text-danger">*</span>
+                            </label>
+
+                            <input type="number" class="form-control" id="cantidadSolicitada" name="cantidadSolicitada" min="1" required>
+                            <div class="invalid-tooltip">Captura una cantidad solicitada valida.</div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/sgrea/hoja-form.js}"></script>
+
+</main>
+</html>

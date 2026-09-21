@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      lang="es">
+<head th:fragment="head">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <!--Accessibility Meta Tags-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
+    <meta name="supported-color-schemes" content="light" />
+    <link rel="preload" th:href="@{/css/adminlte.css}" as="style" />
+    <!--Plugin(OverlayScrollbars)-->
+    <link rel="stylesheet" th:href="@{/css/overlayscrollbars.min.css}"/>
+    <!--Plugin(Bootstrap Icons)-->
+    <link rel="stylesheet" th:href="@{/css/bootstrap-icons.min.css}"/>
+    <!--Plugin(AdminLTE)-->
+    <link rel="stylesheet" th:href="@{/css/adminlte.css}" />
+    <title>SGREA | Iniciar Sesión</title>
+    <!--Theme Init-->
+    <script>
+        const theme = 'light';
+
+        try {
+            localStorage.setItem('lte-theme', theme);
+        } catch {}
+
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        document.documentElement.style.colorScheme = theme;
+    </script>
+</head>
+
+<body class="login-page bg-image">
+<main class="login-box">
+    <div class="card card-outline card-primary">
+        <div class="card-header">
+            <div class="text-center">
+                <img th:src="@{/img/logo.png}" class="img-fluid" alt="SGREA">
+            </div>
+        </div>
+
+        <div class="card-body login-card-body">
+            <p th:if="${bodegas == null}" class="login-box-msg">Ingresa tus credenciales para iniciar sesión</p>
+
+            <form method="post" autocomplete="off" th:action="${bodegas == null} ? @{login-bodega} : @{login-enter}" th:object="${usuario}">
+                <label class="visually-hidden">Usuario</label>
+                <div class="input-group mb-3">
+                    <input th:field="*{username}" autocomplete="off" th:disabled="${bodegas != null}" class="form-control" placeholder="Usuario" required/>
+                    <div class="input-group-text">
+                        <span class="bi bi-person-badge-fill"></span>
+                    </div>
+                </div>
+                <label class="visually-hidden">Contraseña</label>
+                <div th:if="${bodegas == null}" class="input-group mb-3">
+                    <input th:field="*{password}" type="password" autocomplete="new-password" class="form-control" placeholder="Contraseña" required/>
+                    <div class="input-group-text">
+                        <span class="bi bi-key-fill"></span>
+                    </div>
+                </div>
+                <div th:if="${bodegas == null}" name="primerLogin" class="container text-center">
+                    <div class="row">
+                        <div class="col align-self-center">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-lock-fill"></i> Iniciar sesión</button>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${bodegas != null}" name="segundoLogin">
+                    <p class="login-box-msg">Selecciona una bodega para ingresar</p>
+                    <input type="hidden" th:field="*{username}" />
+                    <input type="hidden" th:field="*{idUsuario}" />
+                    <div class="input-group mb-3">
+                        <div class="input-group-text">
+                            <span class="bi bi-house-gear-fill"></span>
+                        </div>
+                        <select class="form-select" th:field="*{bodega}">
+                            <option th:each="bodega : ${bodegas}" th:value="${bodega.idBodega}" th:text="${bodega.nombre}"></option>
+                        </select>
+                    </div>
+                    <div class="container text-center">
+                        <div class="row">
+                            <div class="col align-self-center">
+                                <button type="submit" class="btn btn-success"><i class="bi bi-unlock-fill"></i> Ingresar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div th:if="${error}" class="alert alert-danger mt-3" role="alert" th:text="${error}"></div>
+        </div>
+    </div>
+</main>
+
+<style>
+    .bg-image {
+        background-image: url([[@{/img/login-background.jpg}]]);
+        background-size: cover;          /* Cubre toda la pantalla */
+        background-position: center;     /* Centra la imagen */
+        background-repeat: no-repeat;    /* Evita que se duplique */
+        background-attachment: fixed;    /* Mantiene el fondo fijo al hacer scroll */
+        min-height: 100vh;               /* Asegura que ocupe todo el alto visual */
+    }
+</style>
+
+<!--Plugin(OverlayScrollbars)-->
+<script th:src="@{/js/overlayscrollbars.browser.es6.min.js}"></script>
+<!--Plugin(popperjs for Bootstrap 5)-->
+<script th:src="@{/js/popper.min.js}"></script>
+<!--Plugin(Bootstrap 5)-->
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<!--Plugin(AdminLTE)-->
+<script th:src="@{/js/adminlte.js}"></script>
+<!--OverlayScrollbars Configure-->
+<script>
+    const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+    const Default = {
+      scrollbarTheme: 'os-theme-light',
+      scrollbarAutoHide: 'leave',
+      scrollbarClickScroll: true,
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+      const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+
+      // Disable OverlayScrollbars on mobile devices to prevent touch interference
+      const isMobile = window.innerWidth <= 992;
+
+      if (
+        sidebarWrapper &&
+        OverlayScrollbarsGlobal?.OverlayScrollbars !== undefined &&
+        !isMobile
+      ) {
+        OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+          scrollbars: {
+            theme: Default.scrollbarTheme,
+            autoHide: Default.scrollbarAutoHide,
+            clickScroll: Default.scrollbarClickScroll,
+          },
+        });
+      }
+    });
+</script>
+</body>
+</html>

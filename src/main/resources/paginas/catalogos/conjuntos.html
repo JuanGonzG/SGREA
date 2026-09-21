@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, 'SGREA | Conjuntos')}">
+
+<main class="app-main">
+    <style>
+        #tablaConjuntos .tabulator-row { cursor: pointer; }
+        .tabla-conjuntos-scroll { width: 100%; overflow-x: auto; }
+        #tablaConjuntos { min-width: 1050px; }
+    </style>
+
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <h1 class="mb-0 fs-3">Conjuntos</h1>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header text-end">
+                    <button type="button" class="btn btn-primary" onclick="nuevoConjunto()">
+                        <i class="bi bi-plus-lg"></i> Nuevo conjunto
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="tabla-conjuntos-scroll p-3">
+                        <div id="tablaConjuntos"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalConjunto" tabindex="-1" aria-labelledby="modalConjuntoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConjuntoLabel">Nuevo conjunto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="formConjunto" class="needs-validation" novalidate autocomplete="off">
+                <div class="modal-body">
+                    <input type="hidden" id="idConjunto">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="productoConjunto" class="form-label">Producto:</label>
+                            <select class="form-select" id="productoConjunto" required>
+                                <option value="">Selecciona un producto</option>
+                            </select>
+                            <div class="invalid-feedback">Selecciona un producto activo.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="estadoConjunto" class="form-label">Estado:</label>
+                            <select class="form-select" id="estadoConjunto" required></select>
+                            <div class="invalid-feedback">Selecciona un estado permitido.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fechaAltaConjunto" class="form-label">Fecha de alta:</label>
+                            <input type="text" class="form-control" id="fechaAltaConjunto" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="idConjuntoVisible" class="form-label">Identificador:</label>
+                            <input type="text" class="form-control" id="idConjuntoVisible" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label for="observacionesConjunto" class="form-label">Observaciones:</label>
+                            <textarea class="form-control" id="observacionesConjunto" maxlength="255" rows="3"></textarea>
+                            <div class="form-text">Máximo 255 caracteres.</div>
+                            <div class="invalid-feedback">Las observaciones no pueden superar 255 caracteres.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarConjunto()">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div></div>
+    </div>
+
+    <script th:inline="javascript">
+        const conjuntosIniciales = /*[[${conjuntos}]]*/ [];
+    </script>
+    <script th:src="@{/js/sgrea/conjuntos.js}"></script>
+</main>
+</html>
