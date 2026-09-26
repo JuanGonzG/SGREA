@@ -195,4 +195,49 @@ public class Mapper {
         conjuntoEntity.setEstadoConjunto(estadoConjunto);
         conjuntoEntity.setObservaciones(conjuntoEdicionDTO.getObservaciones());
     }
+
+    // EstadoContenedorEntity to EstadoContenedorDTO
+    public static EstadoContenedorDTO toEstadoContenedorDTO(EstadoContenedorEntity estadoContenedorEntity) {
+        return EstadoContenedorDTO.builder()
+                .idEstadoContenedor(estadoContenedorEntity.getIdEstadoContenedor())
+                .nombre(estadoContenedorEntity.getNombre())
+                .build();
+    }
+
+    // ContenedorEntity to ContenedorDTO
+    public static ContenedorDTO toContenedorDTO(ContenedorEntity contenedorEntity) {
+        return ContenedorDTO.builder()
+                .idContenedor(contenedorEntity.getIdContenedor())
+                .codigo(contenedorEntity.getCodigo())
+                .capacidad(contenedorEntity.getCapacidad())
+                .estadoContenedor(toEstadoContenedorDTO(contenedorEntity.getEstadoContenedor()))
+                .fechaAlta(contenedorEntity.getFechaAlta())
+                .observaciones(contenedorEntity.getObservaciones())
+                .build();
+    }
+
+    // ContenedorAltaDTO to ContenedorEntity using server-controlled values
+    public static ContenedorEntity toContenedorEntity(
+            ContenedorAltaDTO contenedorAltaDTO,
+            String codigo,
+            LocalDateTime fechaAlta,
+            EstadoContenedorEntity estadoContenedor) {
+        return ContenedorEntity.builder()
+                .codigo(codigo)
+                .capacidad(contenedorAltaDTO.getCapacidad())
+                .estadoContenedor(estadoContenedor)
+                .fechaAlta(fechaAlta)
+                .observaciones(contenedorAltaDTO.getObservaciones())
+                .build();
+    }
+
+    // Apply an already validated administrative edit to an existing entity
+    public static void actualizarContenedor(
+            ContenedorEntity contenedorEntity,
+            ContenedorEdicionDTO contenedorEdicionDTO,
+            EstadoContenedorEntity estadoContenedor) {
+        contenedorEntity.setCapacidad(contenedorEdicionDTO.getCapacidad());
+        contenedorEntity.setEstadoContenedor(estadoContenedor);
+        contenedorEntity.setObservaciones(contenedorEdicionDTO.getObservaciones());
+    }
 }
