@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, 'SGREA | Contenedores')}">
+
+<main class="app-main">
+    <style>
+        #tablaContenedores .tabulator-row { cursor: pointer; }
+        .tabla-contenedores-scroll { width: 100%; overflow-x: auto; }
+        #tablaContenedores { min-width: 1050px; }
+    </style>
+
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <h1 class="mb-0 fs-3">Contenedores</h1>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header text-end">
+                    <button type="button" class="btn btn-primary" onclick="nuevoContenedor()">
+                        <i class="bi bi-plus-lg"></i> Nuevo contenedor
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="tabla-contenedores-scroll p-3">
+                        <div id="tablaContenedores"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalContenedor" tabindex="-1"
+         aria-labelledby="modalContenedorLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalContenedorLabel">Nuevo contenedor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="formContenedor" class="needs-validation" novalidate autocomplete="off">
+                <div class="modal-body">
+                    <input type="hidden" id="idContenedor">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="codigoContenedor" class="form-label">Código:</label>
+                            <input type="text" class="form-control" id="codigoContenedor" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fechaAltaContenedor" class="form-label">Fecha de alta:</label>
+                            <input type="text" class="form-control" id="fechaAltaContenedor" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="capacidadContenedor" class="form-label">Capacidad:</label>
+                            <input type="number" class="form-control" id="capacidadContenedor"
+                                   min="1" step="1" required>
+                            <div class="invalid-feedback">La capacidad debe ser mayor que cero.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="estadoContenedor" class="form-label">Estado:</label>
+                            <select class="form-select" id="estadoContenedor" required></select>
+                            <div class="invalid-feedback">Selecciona un estado permitido.</div>
+                        </div>
+                        <div class="col-12">
+                            <label for="observacionesContenedor" class="form-label">Observaciones:</label>
+                            <textarea class="form-control" id="observacionesContenedor"
+                                      maxlength="255" rows="3"></textarea>
+                            <div class="form-text">Máximo 255 caracteres.</div>
+                            <div class="invalid-feedback">Las observaciones no pueden superar 255 caracteres.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarContenedor()">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div></div>
+    </div>
+
+    <script th:inline="javascript">
+        const contenedoresIniciales = /*[[${contenedores}]]*/ [];
+    </script>
+    <script th:src="@{/js/sgrea/contenedores.js}"></script>
+</main>
+</html>
