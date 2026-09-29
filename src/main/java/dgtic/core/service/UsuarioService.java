@@ -17,6 +17,8 @@ import dgtic.core.repository.RolRepository;
 import dgtic.core.repository.SesionRepository;
 import dgtic.core.repository.UsuarioBodegaRepository;
 import dgtic.core.repository.UsuarioRepository;
+import dgtic.core.repository.HojaContenedorRepository;
+import dgtic.core.repository.MovimientoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,12 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioBodegaRepository usuarioBodegaRepository;
+
+    @Autowired
+    private MovimientoRepository movimientoRepository;
+
+    @Autowired
+    private HojaContenedorRepository hojaContenedorRepository;
 
     @Autowired
     private BodegaRepository bodegaRepository;
@@ -170,6 +178,14 @@ public class UsuarioService {
         // Verificar si el usuario tiene sesiones históricas antes de eliminarlo
         if (sesionRepository.existsByUsuario_IdUsuario(idUsuario)) {
             throw new IllegalStateException("No se puede eliminar el usuario porque tiene sesiones históricas.");
+        }
+        // Verificar si el usuario tiene movimientos o referencias operativas antes de eliminarlo
+        if (movimientoRepository.existsByUsuario_IdUsuario(idUsuario)
+                || hojaContenedorRepository.existsByUsuarioAsignacion_IdUsuario(idUsuario)
+                || hojaContenedorRepository.existsByUsuarioCierre_IdUsuario(idUsuario)
+                || hojaContenedorRepository.existsByUsuarioLiberacion_IdUsuario(idUsuario)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el usuario porque tiene historial o referencias operativas.");
         }
         // Eliminar las asociaciones entre el usuario y las bodegas, y luego eliminar el usuario
         usuarioBodegaRepository.deleteByUsuario_IdUsuario(idUsuario);

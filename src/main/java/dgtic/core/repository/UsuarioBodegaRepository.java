@@ -11,6 +11,8 @@ public interface UsuarioBodegaRepository extends JpaRepository<UsuarioBodegaEnti
     List<UsuarioBodegaEntity> findByUsuario_IdUsuario(Integer usuarioId);
     // Validar si hay registros por bodega
     boolean existsByBodega_IdBodega(Integer idBodega);
+    // Validar que el usuario tenga autorizada una bodega específica
+    boolean existsByUsuario_IdUsuarioAndBodega_IdBodega(Integer idUsuario, Integer idBodega);
     // Eliminar todas las asociaciones de bodegas para un usuario
     void deleteByUsuario_IdUsuario(Integer usuarioId);
     // Eliminar una asociación específica entre un usuario y una bodega

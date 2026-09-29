@@ -6,6 +6,8 @@ import dgtic.core.model.dto.HojaProduccionDTO;
 import dgtic.core.repository.DetalleHojaRepository;
 import dgtic.core.repository.EstadoHojaRepository;
 import dgtic.core.repository.HojaProduccionRepository;
+import dgtic.core.repository.HojaContenedorRepository;
+import dgtic.core.repository.MovimientoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,12 @@ public class HojaProduccionService {
     private EstadoHojaRepository estadoHojaRepository;
     @Autowired
     private DetalleHojaRepository detalleHojaRepository;
+
+    @Autowired
+    private MovimientoRepository movimientoRepository;
+
+    @Autowired
+    private HojaContenedorRepository hojaContenedorRepository;
 
     // Obtener todas las hojas de producción de una bodega específica
     public List<HojaProduccionDTO> getHojasProduccionByBodegaId(Integer idBodega) {
@@ -43,7 +51,11 @@ public class HojaProduccionService {
 
     // Eliminar una hoja de producción por su ID
     public Boolean deleteHojaProduccionById(Integer idHoja) {
+        // Validar si la hoja de producción existe antes de eliminarla
         if (hojaProduccionRepository.existsById(idHoja)) {
+            // Validar que no tenga dependencias históricas antes de eliminarla
+            validarSinDependenciasHistoricas(idHoja);
+            // Eliminar la hoja de producción
             hojaProduccionRepository.deleteById(idHoja);
             return true;
         }
@@ -53,8 +65,21 @@ public class HojaProduccionService {
     // Eliminar una hoja de producción junto con sus detalles
     @Transactional
     public void deleteHojaProduccionConDetalles(Integer idHoja) {
+        // Validar que no tenga dependencias históricas antes de eliminarla
+        validarSinDependenciasHistoricas(idHoja);
+        // Eliminar los detalles de la hoja de producción
         detalleHojaRepository.deleteByHojaProduccionEntity_IdHoja(idHoja);
+        // Eliminar la hoja de producción
         hojaProduccionRepository.deleteById(idHoja);
+    }
+
+    private void validarSinDependenciasHistoricas(Integer idHoja) {
+        // Validar que no tenga movimientos o asignaciones de contenedor antes de eliminarla
+        if (movimientoRepository.existsByHojaProduccion_IdHoja(idHoja)
+                || hojaContenedorRepository.existsByHojaProduccion_IdHoja(idHoja)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar la hoja porque tiene movimientos o asignaciones de contenedor.");
+        }
     }
 
     // Obtener el catálogo de estados de hoja
