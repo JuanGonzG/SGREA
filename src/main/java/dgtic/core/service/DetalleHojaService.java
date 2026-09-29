@@ -8,6 +8,7 @@ import dgtic.core.model.entity.DetalleHojaEntity;
 import dgtic.core.model.entity.HojaProduccionEntity;
 import dgtic.core.model.entity.ProductoEntity;
 import dgtic.core.repository.DetalleHojaRepository;
+import dgtic.core.repository.MovimientoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,9 @@ public class DetalleHojaService {
     private ProductoService productoService;
     @Autowired
     private HojaProduccionService hojaProduccionService;
+
+    @Autowired
+    private MovimientoRepository movimientoRepository;
 
     // Obtener todos los detalles de hoja de producción
     public List<DetalleHojaDTO> getDetallesByHojaId(Integer idHoja) {
@@ -58,7 +62,13 @@ public class DetalleHojaService {
 
     // Eliminar un detalle de hoja de producción por su ID
     public Boolean deleteDetalleHojaById(Integer idDetalleHoja) {
+        // Verificar si el detalle existe
         if (detalleHojaRepository.existsById(idDetalleHoja)) {
+            // Verificar si el detalle tiene movimientos asociados
+            if (movimientoRepository.existsByDetalleHoja_IdDetalle(idDetalleHoja)) {
+                throw new IllegalStateException(
+                        "No se puede eliminar el detalle porque tiene historial de movimientos.");
+            }
             detalleHojaRepository.deleteById(idDetalleHoja);
             return true;
         }

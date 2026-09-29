@@ -15,4 +15,5 @@ public class DetalleHojaDTO {
     private ProductoDTO producto;
     private Integer cantidadSolicitada;
     private Integer cantidadSurtida;
+    private Integer cantidadDevuelta;
 }

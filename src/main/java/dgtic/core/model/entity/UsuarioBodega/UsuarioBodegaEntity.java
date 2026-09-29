@@ -22,6 +22,7 @@ public class UsuarioBodegaEntity {
     @JoinColumn(name = "id_usuario")
     private UsuarioEntity usuario;
 
+    // Relación N:1 con Bodega
     @ManyToOne
     @MapsId("idBodega")
     @JoinColumn(name = "id_bodega")

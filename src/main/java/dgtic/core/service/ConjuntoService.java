@@ -10,6 +10,7 @@ import dgtic.core.model.entity.EstadoConjuntoEntity;
 import dgtic.core.model.entity.ProductoEntity;
 import dgtic.core.repository.ConjuntoRepository;
 import dgtic.core.repository.EstadoConjuntoRepository;
+import dgtic.core.repository.MovimientoRepository;
 import dgtic.core.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,9 @@ public class ConjuntoService {
 
     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired
+    private MovimientoRepository movimientoRepository;
 
     // Obtener todos los conjuntos de una bodega específica
     @Transactional(readOnly = true)
@@ -161,8 +165,11 @@ public class ConjuntoService {
                 .orElseThrow(() -> new IllegalArgumentException("El conjunto no existe."));
         // Validar que el producto pertenezca a la bodega activa
         validarProductoAutorizado(conjunto.getProducto(), idBodega);
-
-        // Movimiento aún no existe; actualmente no hay dependencias conocidas que consultar.
+        // Validar que el conjunto no tenga historial de movimientos antes de eliminarlo
+        if (movimientoRepository.existsByConjunto_IdConjunto(idConjunto)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el conjunto porque tiene historial de movimientos.");
+        }
         conjuntoRepository.delete(conjunto);
     }
     // Obtener un estado de conjunto por su ID

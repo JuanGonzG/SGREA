@@ -27,12 +27,12 @@ public class DetalleHojaEntity {
 
     // Relación N:1 con HojaProduccion --> muchos detalles pueden pertenecer a una hoja de producción
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_hoja")
+    @JoinColumn(name = "id_hoja", nullable = false)
     private HojaProduccionEntity hojaProduccionEntity;
 
     // Relación N:1 con Producto --> muchos detalles pueden referirse a un producto
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_producto")
+    @JoinColumn(name = "id_producto", nullable = false)
     private ProductoEntity producto;
 
     @Column(name = "cantidad_solicitada", nullable = false)
@@ -40,4 +40,15 @@ public class DetalleHojaEntity {
 
     @Column(name = "cantidad_surtida")
     private Integer cantidadSurtida;
+
+    @Column(name = "cantidad_devuelta", nullable = false)
+    private Integer cantidadDevuelta;
+
+    // Método para inicializar cantidadDevuelta antes de persistir la entidad
+    @PrePersist
+    private void inicializarCantidadDevuelta() {
+        if (cantidadDevuelta == null) {
+            cantidadDevuelta = 0;
+        }
+    }
 }

@@ -130,6 +130,7 @@ public class Mapper {
                 .producto(toProductoDTO(detalleHojaEntity.getProducto()))
                 .cantidadSolicitada(detalleHojaEntity.getCantidadSolicitada())
                 .cantidadSurtida(detalleHojaEntity.getCantidadSurtida())
+                .cantidadDevuelta(detalleHojaEntity.getCantidadDevuelta())
                 .build();
     }
 
@@ -141,6 +142,7 @@ public class Mapper {
                 .producto(toProductoEntity(detalleHojaDTO.getProducto()))
                 .cantidadSolicitada(detalleHojaDTO.getCantidadSolicitada())
                 .cantidadSurtida(detalleHojaDTO.getCantidadSurtida())
+                .cantidadDevuelta(detalleHojaDTO.getCantidadDevuelta())
                 .build();
     }
 
@@ -239,5 +241,104 @@ public class Mapper {
         contenedorEntity.setCapacidad(contenedorEdicionDTO.getCapacidad());
         contenedorEntity.setEstadoContenedor(estadoContenedor);
         contenedorEntity.setObservaciones(contenedorEdicionDTO.getObservaciones());
+    }
+
+    // TipoMovimientoEntity to TipoMovimientoDTO
+    public static TipoMovimientoDTO toTipoMovimientoDTO(TipoMovimientoEntity tipoMovimientoEntity) {
+        return TipoMovimientoDTO.builder()
+                .idTipoMovimiento(tipoMovimientoEntity.getIdTipoMovimiento())
+                .nombre(tipoMovimientoEntity.getNombre())
+                .build();
+    }
+
+    // HojaContenedorEntity to HojaContenedorDTO
+    public static HojaContenedorDTO toHojaContenedorDTO(HojaContenedorEntity entity) {
+        return HojaContenedorDTO.builder()
+                .idHojaContenedor(entity.getIdHojaContenedor())
+                .hojaProduccion(toHojaProduccionDTO(entity.getHojaProduccion()))
+                .contenedor(toContenedorDTO(entity.getContenedor()))
+                .fechaAsignacion(entity.getFechaAsignacion())
+                .fechaCierreCarga(entity.getFechaCierreCarga())
+                .fechaLiberacion(entity.getFechaLiberacion())
+                .usuarioAsignacion(toUsuarioDTO(entity.getUsuarioAsignacion()))
+                .usuarioCierre(entity.getUsuarioCierre() == null ? null : toUsuarioDTO(entity.getUsuarioCierre()))
+                .usuarioLiberacion(entity.getUsuarioLiberacion() == null ? null : toUsuarioDTO(entity.getUsuarioLiberacion()))
+                .observaciones(entity.getObservaciones())
+                .build();
+    }
+
+    // HojaContenedorAsignacionDTO to HojaContenedorEntity using server-controlled values
+    public static HojaContenedorEntity toHojaContenedorEntity(
+            HojaContenedorAsignacionDTO dto,
+            HojaProduccionEntity hojaProduccion,
+            ContenedorEntity contenedor,
+            UsuarioEntity usuarioAsignacion,
+            LocalDateTime fechaAsignacion) {
+        return HojaContenedorEntity.builder()
+                .hojaProduccion(hojaProduccion)
+                .contenedor(contenedor)
+                .fechaAsignacion(fechaAsignacion)
+                .usuarioAsignacion(usuarioAsignacion)
+                .observaciones(dto.getObservaciones())
+                .build();
+    }
+
+    // MovimientoEntity to MovimientoDTO
+    public static MovimientoDTO toMovimientoDTO(MovimientoEntity entity) {
+        return MovimientoDTO.builder()
+                .idMovimiento(entity.getIdMovimiento())
+                .tipoMovimiento(toTipoMovimientoDTO(entity.getTipoMovimiento()))
+                .conjunto(toConjuntoDTO(entity.getConjunto()))
+                .hojaProduccion(toHojaProduccionDTO(entity.getHojaProduccion()))
+                .detalleHoja(entity.getDetalleHoja() == null ? null : toDetalleHojaDTO(entity.getDetalleHoja()))
+                .hojaContenedor(entity.getHojaContenedor() == null ? null : toHojaContenedorDTO(entity.getHojaContenedor()))
+                .usuario(toUsuarioDTO(entity.getUsuario()))
+                .fecha(entity.getFecha())
+                .observaciones(entity.getObservaciones())
+                .build();
+    }
+
+    // MovimientoSalidaDTO to MovimientoEntity using server-controlled values
+    public static MovimientoEntity toMovimientoSalidaEntity(
+            MovimientoSalidaDTO dto,
+            TipoMovimientoEntity tipoMovimiento,
+            ConjuntoEntity conjunto,
+            HojaProduccionEntity hojaProduccion,
+            DetalleHojaEntity detalleHoja,
+            HojaContenedorEntity hojaContenedor,
+            UsuarioEntity usuario,
+            LocalDateTime fecha) {
+        return MovimientoEntity.builder()
+                .tipoMovimiento(tipoMovimiento)
+                .conjunto(conjunto)
+                .hojaProduccion(hojaProduccion)
+                .detalleHoja(detalleHoja)
+                .hojaContenedor(hojaContenedor)
+                .usuario(usuario)
+                .fecha(fecha)
+                .observaciones(dto.getObservaciones())
+                .build();
+    }
+
+    // MovimientoEntradaDTO to MovimientoEntity using server-controlled values
+    public static MovimientoEntity toMovimientoEntradaEntity(
+            MovimientoEntradaDTO dto,
+            TipoMovimientoEntity tipoMovimiento,
+            ConjuntoEntity conjunto,
+            HojaProduccionEntity hojaProduccion,
+            DetalleHojaEntity detalleHoja,
+            HojaContenedorEntity hojaContenedor,
+            UsuarioEntity usuario,
+            LocalDateTime fecha) {
+        return MovimientoEntity.builder()
+                .tipoMovimiento(tipoMovimiento)
+                .conjunto(conjunto)
+                .hojaProduccion(hojaProduccion)
+                .detalleHoja(detalleHoja)
+                .hojaContenedor(hojaContenedor)
+                .usuario(usuario)
+                .fecha(fecha)
+                .observaciones(dto.getObservaciones())
+                .build();
     }
 }

@@ -9,6 +9,7 @@ import dgtic.core.model.entity.ContenedorEntity;
 import dgtic.core.model.entity.EstadoContenedorEntity;
 import dgtic.core.repository.ContenedorRepository;
 import dgtic.core.repository.EstadoContenedorRepository;
+import dgtic.core.repository.HojaContenedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,9 @@ public class ContenedorService {
 
     @Autowired
     private EstadoContenedorRepository estadoContenedorRepository;
+
+    @Autowired
+    private HojaContenedorRepository hojaContenedorRepository;
 
     // Obtener todos los contenedores ordenados por código ascendente
     @Transactional(readOnly = true)
@@ -135,8 +139,11 @@ public class ContenedorService {
         // Obtener el contenedor por su ID, lanzar una excepción si no existe
         ContenedorEntity contenedor = contenedorRepository.findById(idContenedor)
                 .orElseThrow(() -> new IllegalArgumentException("El contenedor no existe."));
-
-        // Mientras Movimiento no exista, las dependencias conocidas quedan protegidas por la BD.
+        // Verificar si el contenedor tiene historial o asignaciones, lanzar una excepción si es así
+        if (hojaContenedorRepository.existsByContenedor_IdContenedor(idContenedor)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el contenedor porque tiene historial o asignaciones.");
+        }
         contenedorRepository.delete(contenedor);
     }
     // Método para obtener el estado inicial del contenedor (Disponible) desde el repositorio
