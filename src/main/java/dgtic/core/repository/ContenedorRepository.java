@@ -17,6 +17,8 @@ public interface ContenedorRepository extends JpaRepository<ContenedorEntity, In
     Optional<ContenedorEntity> findTopByOrderByCodigoDesc();
     // Validar si existe un contenedor con un código específico
     boolean existsByCodigo(String codigo);
+    // Buscar un contenedor por su código escaneable, ignorando mayúsculas/minúsculas
+    Optional<ContenedorEntity> findByCodigoIgnoreCase(String codigo);
     // Validar si existe un contenedor con un código específico, excluyendo un contenedor específico por idContenedor
     List<ContenedorEntity> findByEstadoContenedor_IdEstadoContenedorOrderByCodigoAsc(Integer idEstadoContenedor);
     // Buscar contenedor por idContenedor con bloqueo pesimista para actualización

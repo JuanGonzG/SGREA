@@ -58,7 +58,7 @@ public class HojaController {
                 && hojaProduccion.getIdHoja() != null
                 && hojaProduccion.getEstadoHoja() != null
                 && hojaProduccion.getEstadoHoja().getIdEstadoHoja() != null
-                && hojaProduccion.getEstadoHoja().getIdEstadoHoja() >= 2; //Por surtir
+                && hojaProduccion.getEstadoHoja().getIdEstadoHoja() >= 2;
     }
 
     // Cargar los detalles de la hoja de producción y agregarlos al modelo
@@ -124,8 +124,13 @@ public class HojaController {
         }
 
         // Agregar un objeto vacío de HojaProduccionDTO al modelo para el formulario de creación
+        EstadoHojaDTO estadoInicial = hojaProduccionService.getEstadoHojaById(1);
+        if (estadoInicial == null) {
+            return "error/error";
+        }
+        // Crear un objeto HojaProduccionDTO con el estado inicial y agregarlo al modelo
         HojaProduccionDTO hojaProduccion = HojaProduccionDTO.builder()
-                .estadoHoja(catalogoEstadoHoja.get(0))
+                .estadoHoja(estadoInicial)
                 .build();
         model.addAttribute("hojaProduccion", hojaProduccion);
         model.addAttribute("soloLectura", esSoloLectura(hojaProduccion));
@@ -162,6 +167,35 @@ public class HojaController {
         model.addAttribute("soloLectura", esSoloLectura(hojaProduccion));
         cargarDetallesHoja(model, hojaProduccion.getIdHoja());
         return "operacion/hoja-form";
+    }
+    // Bloquear una hoja de producción para indicar que está lista para surtido
+    @PostMapping("/{idHoja}/bloquear")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> bloquearHoja(HttpSession session, @PathVariable Integer idHoja) {
+        // Verificar si hay una sesión activa en el servidor
+        if (!sesionService.isSesionActiva(session)) {
+            return buildErrorResponse(HttpStatus.UNAUTHORIZED, "La sesion ha expirado.");
+        }
+        // Obtener el ID de la bodega asociada a la sesión
+        Integer idBodega = obtenerIdBodegaSesion(session);
+        if (idBodega == null) {
+            return buildErrorResponse(HttpStatus.BAD_REQUEST,
+                    "La sesion no tiene una bodega seleccionada.");
+        }
+        try {
+            // Bloquear la hoja de producción para indicar que está lista para surtido
+            hojaProduccionService.bloquearHoja(idHoja, idBodega);
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "La hoja quedó lista para surtido.");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException exception) {
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+        } catch (IllegalStateException exception) {
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        } catch (DataAccessException exception) {
+            return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No fue posible bloquear la hoja de producción.");
+        }
     }
 
     // Obtener los productos disponibles en la bodega asociada a la sesión y enviarlos como respuesta JSON
@@ -435,7 +469,12 @@ public class HojaController {
             }
             // Si la hoja es nueva, asignar el estado inicial; si es existente, verificar su estado actual
             if (esNuevaHoja) {
-                hojaProduccion.setEstadoHoja(catalogoEstadoHoja.get(0));
+                // Asignar el estado inicial a la hoja de producción
+                EstadoHojaDTO estadoInicial = hojaProduccionService.getEstadoHojaById(1);
+                if (estadoInicial == null) {
+                    throw new IllegalArgumentException("No existe el estado inicial de la hoja.");
+                }
+                hojaProduccion.setEstadoHoja(estadoInicial);
             } else {
                 HojaProduccionDTO hojaActual = hojaProduccionService.getById(hojaProduccion.getIdHoja());
                 if (hojaActual == null) {

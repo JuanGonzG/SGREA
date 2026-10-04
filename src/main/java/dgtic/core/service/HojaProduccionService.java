@@ -3,6 +3,8 @@ package dgtic.core.service;
 import dgtic.core.mapping.Mapper;
 import dgtic.core.model.dto.EstadoHojaDTO;
 import dgtic.core.model.dto.HojaProduccionDTO;
+import dgtic.core.model.entity.EstadoHojaEntity;
+import dgtic.core.model.entity.HojaProduccionEntity;
 import dgtic.core.repository.DetalleHojaRepository;
 import dgtic.core.repository.EstadoHojaRepository;
 import dgtic.core.repository.HojaProduccionRepository;
@@ -47,6 +49,36 @@ public class HojaProduccionService {
     // Guardar o actualizar una hoja de producción
     public HojaProduccionDTO addHojaProduccion(HojaProduccionDTO hojaProduccionDTO) {
         return Mapper.toHojaProduccionDTO(hojaProduccionRepository.save(Mapper.toHojaProduccionEntity(hojaProduccionDTO)));
+    }
+    // Bloquear una hoja de producción
+    @Transactional
+    public void bloquearHoja(Integer idHoja, Integer idBodega) {
+        // Obtener la hoja de producción con bloqueo para evitar condiciones de carrera
+        HojaProduccionEntity hoja = hojaProduccionRepository.findByIdForUpdate(idHoja)
+                .orElseThrow(() -> new IllegalArgumentException("La hoja de producción no existe."));
+        // Validar que la hoja pertenezca a la bodega activa
+        if (hoja.getBodega() == null || !idBodega.equals(hoja.getBodega().getIdBodega())) {
+            throw new IllegalArgumentException("La hoja no pertenece a la bodega activa.");
+        }
+        // Validar que la hoja esté en estado "Creada" antes de bloquearla
+        if (hoja.getEstadoHoja() == null || !Integer.valueOf(1).equals(hoja.getEstadoHoja().getIdEstadoHoja())) {
+            throw new IllegalArgumentException("Solo se pueden bloquear hojas en estado Creada.");
+        }
+        // Validar que la hoja tenga detalles antes de bloquearla
+        if (!detalleHojaRepository.findByHojaProduccionEntity_IdHoja(idHoja).iterator().hasNext()) {
+            throw new IllegalArgumentException("No se puede bloquear una hoja sin detalles.");
+        }
+        // Cambiar el estado de la hoja a "Por surtir"
+        EstadoHojaEntity estadoPorSurtir = estadoHojaRepository.findById(2)
+                .orElseThrow(() -> new IllegalStateException("No existe el estado de hoja Por surtir."));
+        hoja.setEstadoHoja(estadoPorSurtir);
+        hojaProduccionRepository.save(hoja);
+    }
+    // Obtener un estado de hoja por su ID
+    public EstadoHojaDTO getEstadoHojaById(Integer idEstadoHoja) {
+        return estadoHojaRepository.findById(idEstadoHoja)
+                .map(Mapper::toEstadoHojaDTO)
+                .orElse(null);
     }
 
     // Eliminar una hoja de producción por su ID

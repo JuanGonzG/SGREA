@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface HojaContenedorRepository extends JpaRepository<HojaContenedorEntity, Integer> {
     // Buscar todos los registros de HojaContenedor por idHoja
     List<HojaContenedorEntity> findByHojaProduccion_IdHoja(Integer idHoja);
+    // Buscar la asignación abierta de una hoja, sin cierre de carga ni liberación
+    Optional<HojaContenedorEntity> findByHojaProduccion_IdHojaAndFechaCierreCargaIsNullAndFechaLiberacionIsNull(Integer idHoja);
     // Buscar todos los registros de HojaContenedor por idContenedor
     List<HojaContenedorEntity> findByContenedor_IdContenedor(Integer idContenedor);
     // Buscar el registro de HojaContenedor por idContenedor y fechaLiberacion nula
