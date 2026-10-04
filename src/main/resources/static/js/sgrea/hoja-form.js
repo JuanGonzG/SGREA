@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const contenedorVista = document.querySelector(".app-main");
     const formularioHoja = document.getElementById("formHoja");
+    const botonBloquearHoja = document.getElementById("btnBloquearHoja");
     const botonEliminarHoja = document.getElementById("btnEliminarHoja");
     const formularioDetalle = document.getElementById("formDetalle");
     const botonAgregarDetalle = document.getElementById("btnAgregarDetalle");
@@ -85,6 +86,37 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // Agregar listener para el botón de eliminar hoja
+    botonBloquearHoja?.addEventListener("click", async () => {
+        if (!idHoja) return;
+        // Mostrar un cuadro de confirmación antes de bloquear la hoja
+        const confirmacion = await confirmarAccion({
+            titulo: "¿Bloquear hoja para surtido?",
+            mensaje: "La hoja y sus detalles dejarán de ser editables.",
+            textoConfirmar: "Sí, bloquear hoja",
+            colorConfirmar: "#ffc107"
+        });
+
+        if (!confirmacion.isConfirmed) return;
+        // Intentar bloquear la hoja de producción mediante una solicitud POST
+        try {
+            LoadingOverlay.mostrar("Bloqueando hoja...");
+            const response = await fetch(`/hojas-produccion/${idHoja}/bloquear`, {method: "POST"});
+            // Leer la respuesta JSON y manejar el caso de sesión expirada (401)
+            const data = await leerRespuestaJson(response);
+            if (!response.ok) {
+                throw new Error(data.mensaje || "No fue posible bloquear la hoja.");
+            }
+            // Si la respuesta es exitosa, ocultar el overlay de carga, mostrar un mensaje de éxito y recargar la página
+            await LoadingOverlay.ocultar();
+            await mostrarExito(data.mensaje || "La hoja quedó lista para surtido.", "Hoja bloqueada");
+            window.location.reload();
+        } catch (error) {
+            await LoadingOverlay.ocultar();
+            manejarErrorFetch(error, "No fue posible bloquear la hoja.");
+        }
+    });
 
     // Agregar listener para el botón de eliminar hoja
     botonEliminarHoja?.addEventListener("click", async () => {

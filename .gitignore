@@ -33,3 +33,4 @@ build/
 .vscode/
 AGENTS.md
 docs/especificacion-entidades.md
+docs/esquema-actual.sql

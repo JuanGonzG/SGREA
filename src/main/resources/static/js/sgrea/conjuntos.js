@@ -8,6 +8,7 @@ const ESTADO_FUERA_DE_SERVICIO = 4;
 let tablaConjuntos;
 let productosConjunto = [];
 let estadosConjunto = [];
+let tomSelectProductoConjunto = null;
 
 // Función para escapar caracteres HTML en un valor dado
 function escaparHtmlConjunto(valor) {
@@ -47,7 +48,13 @@ function limpiarFormularioConjunto() {
     document.getElementById('idConjunto').value = '';
     document.getElementById('idConjuntoVisible').value = '';
     document.getElementById('fechaAltaConjunto').value = '';
-    document.getElementById('productoConjunto').disabled = false;
+    // Limpiar y habilitar el select de productos
+    if (tomSelectProductoConjunto) {
+        tomSelectProductoConjunto.clear(true);
+        tomSelectProductoConjunto.enable();
+    } else {
+        document.getElementById('productoConjunto').disabled = false;
+    }
     document.getElementById('estadoConjunto').disabled = true;
 }
 // Función para cargar los catálogos de productos y estados de conjunto desde el servidor
@@ -73,18 +80,50 @@ async function cargarCatalogosConjunto() {
 }
 // Función para llenar el select de productos en el formulario de conjunto
 function llenarProductosConjunto(idProducto = '') {
-    // Obtener el elemento select de productos y limpiar sus opciones
+    // Obtener el elemento select de productos y preparar las opciones
     const select = document.getElementById('productoConjunto');
-    select.innerHTML = '<option value="">Selecciona un producto</option>';
-    // Agregar las opciones de productos al select
-    productosConjunto.forEach(producto => {
-        const option = document.createElement('option');
-        option.value = producto.idProducto;
-        option.textContent = producto.nombre;
-        select.appendChild(option);
-    });
-    // Establecer el valor seleccionado en el select según el idProducto proporcionado
-    select.value = idProducto ? String(idProducto) : '';
+    const opcionesProducto = productosConjunto.map(producto => ({
+        value: String(producto.idProducto),
+        text: producto.nombre
+    }));
+    // Determinar el ID del producto seleccionado, si se proporciona
+    const idProductoSeleccionado = idProducto ? String(idProducto) : null;
+    // Si TomSelect no está definido, llenar el select de manera tradicional
+    if (typeof TomSelect === 'undefined') {
+        select.innerHTML = '';
+        // Agregar una opción por defecto al select según si hay productos disponibles o no
+        select.appendChild(new Option(
+            opcionesProducto.length ? 'Selecciona un producto' : 'No hay productos disponibles',
+            ''
+        ));
+        // Agregar las opciones de productos al select
+        opcionesProducto.forEach(opcion => select.add(new Option(opcion.text, opcion.value)));
+        // Establecer el valor seleccionado en el select según el ID del producto proporcionado
+        select.value = idProductoSeleccionado || '';
+        return;
+    }
+    // Si TomSelect está definido, inicializarlo o actualizarlo según corresponda
+    if (!tomSelectProductoConjunto) {
+        tomSelectProductoConjunto = new TomSelect(select, {
+            create: false,
+            allowEmptyOption: true,
+            placeholder: 'Seleccionar producto...',
+            maxOptions: 500,
+            sortField: [{field: 'text', direction: 'asc'}]
+        });
+    }
+    // Limpiar las opciones existentes y agregar las nuevas opciones de productos
+    tomSelectProductoConjunto.clear(true);
+    tomSelectProductoConjunto.clearOptions();
+    tomSelectProductoConjunto.addOption(opcionesProducto.length
+        ? opcionesProducto
+        : {value: '', text: 'No hay productos disponibles', disabled: true});
+    // Actualizar las opciones del select y establecer el valor seleccionado según el ID del producto proporcionado
+    tomSelectProductoConjunto.refreshOptions(false);
+    if (idProductoSeleccionado) {
+        tomSelectProductoConjunto.setValue(idProductoSeleccionado);
+        tomSelectProductoConjunto.refreshItems();
+    }
 }
 // Función para llenar el select de estados en el formulario de conjunto
 function llenarEstadosConjunto(idEstado, esNuevo) {
@@ -151,7 +190,10 @@ async function editarConjunto(conjunto) {
             ? new Date(conjunto.fechaAlta).toLocaleString('es-MX') : '';
         // Llenar el select de productos y deshabilitarlo para que no se pueda cambiar
         llenarProductosConjunto(conjunto.producto?.idProducto);
-        document.getElementById('productoConjunto').disabled = true;
+        tomSelectProductoConjunto?.disable();
+        if (!tomSelectProductoConjunto) {
+            document.getElementById('productoConjunto').disabled = true;
+        }
         document.getElementById('observacionesConjunto').value = conjunto.observaciones || '';
         // Llenar el select de estados y deshabilitarlo si el estado es Surtido o Fuera de servicio
         const idEstado = conjunto.estadoConjunto?.idEstadoConjunto;

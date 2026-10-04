@@ -10,6 +10,8 @@ import java.util.List;
 public interface MovimientoRepository extends JpaRepository<MovimientoEntity, Integer> {
     // Buscar movimientos por idHoja ordenados por fecha ascendente y idMovimiento ascendente
     List<MovimientoEntity> findByHojaProduccion_IdHojaOrderByFechaAscIdMovimientoAsc(Integer idHoja);
+    // Buscar los últimos cinco movimientos de una hoja para reconstruir la pantalla HH
+    List<MovimientoEntity> findTop5ByHojaProduccion_IdHojaOrderByFechaDescIdMovimientoDesc(Integer idHoja);
     // Buscar movimientos por idDetalle ordenados por fecha ascendente y idMovimiento ascendente
     List<MovimientoEntity> findByConjunto_IdConjuntoOrderByFechaAscIdMovimientoAsc(String idConjunto);
     // Buscar movimientos por idHojaContenedor ordenados por fecha ascendente y idMovimiento ascendente

@@ -34,6 +34,8 @@ public class MovimientoService {
     private static final int TIPO_ENTRADA = 2;
     private static final int ESTADO_DISPONIBLE = 1;
     private static final int ESTADO_SURTIDO = 2;
+    private static final int ESTADO_HOJA_POR_SURTIR = 2;
+    private static final int ESTADO_HOJA_SURTIENDO = 3;
 
     @Autowired
     private MovimientoRepository movimientoRepository;
@@ -73,6 +75,15 @@ public class MovimientoService {
         UsuarioEntity usuario = obtenerUsuarioAutorizado(idUsuario, idBodega);
         // Obtener la hoja de producción bloqueada para actualización
         HojaProduccionEntity hoja = obtenerHojaBloqueada(dto.getIdHoja(), idBodega);
+        // Validar que la hoja esté en estado POR_SURTIR o SURTIENDO
+        Integer idEstadoHoja = hoja.getEstadoHoja() == null
+                ? null
+                : hoja.getEstadoHoja().getIdEstadoHoja();
+        if (!Integer.valueOf(ESTADO_HOJA_POR_SURTIR).equals(idEstadoHoja)
+                && !Integer.valueOf(ESTADO_HOJA_SURTIENDO).equals(idEstadoHoja)) {
+            throw new IllegalArgumentException(
+                    "La hoja no está disponible para registrar salidas.");
+        }
         // Obtener el detalle de hoja bloqueado para actualización
         DetalleHojaEntity detalle = detalleHojaRepository.findByIdForUpdate(dto.getIdDetalle())
                 .orElseThrow(() -> new IllegalArgumentException("El detalle de hoja no existe."));

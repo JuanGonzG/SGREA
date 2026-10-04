@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, 'SGREA | Surtido')}">
+
+<main class="app-main" th:attr="data-id-hoja=${idHoja}">
+    <style>
+        .hh-scan-input {
+            min-height: 4rem;
+            font-size: 1.35rem;
+            letter-spacing: .04em;
+        }
+
+        .hh-progress-value {
+            min-width: 3rem;
+            text-align: right;
+        }
+
+        .hh-operation-card {
+            border-top: .25rem solid var(--bs-primary);
+        }
+
+        .hh-placeholder {
+            min-height: 6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bs-secondary-color);
+            background-color: var(--bs-tertiary-bg);
+            border: 1px dashed var(--bs-border-color);
+            border-radius: .375rem;
+            text-align: center;
+        }
+
+        @media (min-width: 992px) {
+            .hh-operation-column {
+                position: sticky;
+                top: 1rem;
+                align-self: flex-start;
+            }
+        }
+    </style>
+
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                <div>
+                    <h1 class="mb-0 fs-3">Surtido</h1>
+                    <small class="text-muted">Preparación de hojas mediante escaneo de conjuntos.</small>
+                </div>
+                <a th:href="@{/}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Regresar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <section id="seccionSeleccionHoja" class="card mx-auto" style="max-width: 42rem;"
+                     th:classappend="${idHoja != null ? ' d-none' : ''}"
+                     aria-labelledby="tituloSeleccionHoja">
+                <div class="card-header">
+                    <h2 id="tituloSeleccionHoja" class="card-title fs-5 mb-0">
+                        <i class="bi bi-file-earmark-check me-2"></i>
+                        Seleccionar hoja
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Captura el identificador de la hoja de producción que deseas surtir.
+                    </p>
+                    <form id="formSeleccionHoja" autocomplete="off">
+                        <label for="idHojaSeleccionada" class="form-label">
+                            Identificador de hoja <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <input type="number" min="1" step="1" class="form-control"
+                                   id="idHojaSeleccionada" required
+                                   placeholder="Ej. 12"
+                                   aria-describedby="ayudaSeleccionHoja">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-arrow-right-circle me-1"></i> Continuar
+                            </button>
+                        </div>
+                        <div id="ayudaSeleccionHoja" class="form-text">
+                            La hoja se validará contra la bodega activa en el servidor.
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="seccionOperacionSurtido"
+                     th:if="${idHoja != null}"
+                     class="d-none"
+                     aria-labelledby="tituloSurtidoHoja">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-3 align-items-start justify-content-between">
+                            <div>
+                                <span class="badge text-bg-primary mb-2">
+                                    Hoja #<span th:text="${idHoja}">0</span>
+                                </span>
+                                <h2 id="tituloSurtidoHoja" class="fs-4 mb-1" data-campo="nombreProyecto">
+                                    Cargando proyecto...
+                                </h2>
+                                <p class="text-muted mb-0">
+                                    Cliente: <span id="hhCliente">Cargando...</span>
+                                </p>
+                                <small class="text-muted">
+                                    Fecha de salida: <span id="hhFechaSalida">Cargando...</span>
+                                </small>
+                            </div>
+                            <div class="text-md-end">
+                                <div class="text-muted small">Avance general</div>
+                                <div class="fs-3 fw-semibold">
+                                    <span id="hhPorcentaje">0</span>%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress mt-3" role="progressbar" aria-label="Avance de surtido"
+                             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div id="hhProgreso" class="progress-bar" style="width: 0%">0%</div>
+                        </div>
+                        <div class="row g-3 mt-2 text-center">
+                            <div class="col-4">
+                                <div class="text-muted small">Solicitado</div>
+                                <strong id="hhTotalSolicitado">0</strong>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-muted small">Surtido</div>
+                                <strong id="hhTotalSurtido">0</strong>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-muted small">Pendiente</div>
+                                <strong id="hhTotalPendiente">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-lg-5 order-first hh-operation-column">
+                        <div class="card hh-operation-card mb-4">
+                            <div class="card-header">
+                                <h3 class="card-title fs-5 mb-0">
+                                    <i class="bi bi-upc-scan me-2"></i> Operación
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="bloqueAsignarContenedor" class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label for="codigoContenedorHH" class="form-label fw-semibold mb-0">
+                                            Contenedor
+                                        </label>
+                                        <span id="hhEstadoContenedor" class="badge text-bg-secondary">Sin asignar</span>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="text" id="codigoContenedorHH"
+                                               class="form-control hh-scan-input"
+                                               maxlength="50" autocomplete="off"
+                                               placeholder="Escanea CONT-000001">
+                                        <button type="button" id="btnAsignarContenedor"
+                                                class="btn btn-primary">
+                                            Asignar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="border rounded p-3 mb-4 bg-body-tertiary">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Contenedor activo</span>
+                                        <strong id="hhCodigoContenedor">Ninguno</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-2">
+                                        <span class="text-muted">Ocupación</span>
+                                        <strong><span id="hhOcupacionContenedor">0</span> /
+                                            <span id="hhCapacidadContenedor">0</span></strong>
+                                    </div>
+                                    <div class="progress mt-2" role="progressbar" aria-label="Ocupación del contenedor">
+                                        <div id="hhProgresoContenedor" class="progress-bar bg-info" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="codigoConjuntoHH" class="form-label fw-semibold">
+                                        Escanear conjunto
+                                    </label>
+                                    <input type="text" id="codigoConjuntoHH"
+                                           class="form-control hh-scan-input"
+                                           maxlength="50" autocomplete="off"
+                                           placeholder="Asigna un contenedor primero"
+                                           disabled>
+                                    <div class="form-text">
+                                        Cada escaneo registra una unidad física.
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="button" id="btnCerrarCarga"
+                                            class="btn btn-outline-primary" disabled>
+                                        <i class="bi bi-lock me-1"></i> Cerrar carga
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-12 col-lg-7">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h3 class="card-title fs-5 mb-0">
+                                    <i class="bi bi-box-seam me-2"></i> Productos y avance
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="hhDetalles" class="vstack gap-3">
+                                    <div class="hh-placeholder">Los detalles aparecerán al cargar la hoja.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title fs-5 mb-0">
+                                    <i class="bi bi-clock-history me-2"></i> Últimos movimientos
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="hhMovimientos" class="vstack gap-2">
+                                    <div class="hh-placeholder">No hay movimientos recientes.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script th:src="@{/js/sgrea/surtido.js}"></script>
+</main>
+</html>

@@ -298,6 +298,59 @@ public class Mapper {
                 .build();
     }
 
+    // DetalleHojaEntity to SurtidoDetalleDTO using service-calculated progress values
+    public static SurtidoDetalleDTO toSurtidoDetalleDTO(
+            DetalleHojaEntity entity,
+            Integer cantidadSurtida,
+            Integer cantidadPendiente,
+            Integer porcentaje,
+            Boolean completo) {
+        return SurtidoDetalleDTO.builder()
+                .idDetalle(entity.getIdDetalle())
+                .idProducto(entity.getProducto().getIdProducto())
+                .producto(entity.getProducto().getNombre())
+                .cantidadSolicitada(entity.getCantidadSolicitada())
+                .cantidadSurtida(cantidadSurtida)
+                .cantidadPendiente(cantidadPendiente)
+                .porcentaje(porcentaje)
+                .completo(completo)
+                .build();
+    }
+
+    // HojaContenedorEntity to SurtidoContenedorDTO using service-calculated occupancy values
+    public static SurtidoContenedorDTO toSurtidoContenedorDTO(
+            HojaContenedorEntity entity,
+            Integer ocupacion,
+            Integer porcentaje,
+            Boolean disponible,
+            Boolean lleno) {
+        return SurtidoContenedorDTO.builder()
+                .idHojaContenedor(entity.getIdHojaContenedor())
+                .idContenedor(entity.getContenedor().getIdContenedor())
+                .codigo(entity.getContenedor().getCodigo())
+                .capacidad(entity.getContenedor().getCapacidad())
+                .ocupacion(ocupacion)
+                .disponible(disponible)
+                .porcentaje(porcentaje)
+                .cargaCerrada(entity.getFechaCierreCarga() != null)
+                .lleno(lleno)
+                .build();
+    }
+
+    // MovimientoEntity to the compact representation used by HH Surtido
+    public static SurtidoMovimientoDTO toSurtidoMovimientoDTO(MovimientoEntity entity) {
+        return SurtidoMovimientoDTO.builder()
+                .idMovimiento(entity.getIdMovimiento())
+                .codigoConjunto(entity.getConjunto().getIdConjunto())
+                .producto(entity.getConjunto().getProducto().getNombre())
+                .codigoContenedor(entity.getHojaContenedor() == null
+                        ? null
+                        : entity.getHojaContenedor().getContenedor().getCodigo())
+                .fecha(entity.getFecha())
+                .usuario(entity.getUsuario().getNombre())
+                .build();
+    }
+
     // MovimientoSalidaDTO to MovimientoEntity using server-controlled values
     public static MovimientoEntity toMovimientoSalidaEntity(
             MovimientoSalidaDTO dto,

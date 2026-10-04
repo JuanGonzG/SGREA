@@ -140,6 +140,13 @@
 
                     <div class="card-footer text-end">
                         <button type="button"
+                                id="btnBloquearHoja"
+                                class="btn btn-warning me-2"
+                                th:if="${hojaProduccion != null and hojaProduccion.idHoja != null and hojaProduccion.estadoHoja != null and hojaProduccion.estadoHoja.idEstadoHoja == 1}">
+                            <i class="bi bi-lock me-1"></i>
+                            Bloquear hoja para surtido
+                        </button>
+                        <button type="button"
                                 id="btnEliminarHoja"
                                 class="btn btn-danger me-2"
                                 th:if="${hojaProduccion != null and hojaProduccion.idHoja != null and hojaProduccion.estadoHoja != null and hojaProduccion.estadoHoja.idEstadoHoja == 1}">

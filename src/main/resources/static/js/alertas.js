@@ -31,6 +31,18 @@ function mostrarExito(mensaje, titulo = 'Éxito') {
     });
 }
 
+// Mostrar un mensaje de éxito temporal, sin botón de confirmación
+function mostrarExitoTemporal(mensaje, titulo = 'Éxito', tiempo = 1800) {
+    return Swal.fire({
+        icon: 'success',
+        title: titulo,
+        text: mensaje,
+        showConfirmButton: false,
+        timer: tiempo,
+        timerProgressBar: true
+    });
+}
+
 // Mostrar un mensaje de error usando SweetAlert2
 function mostrarError(mensaje, titulo = 'Error') {
     return Swal.fire({
