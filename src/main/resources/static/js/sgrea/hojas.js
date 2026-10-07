@@ -31,6 +31,10 @@ function formatearAccionesHoja(cell) {
     if (estado === 2 || estado === 3) {
         acciones.push(`<button type="button" class="btn btn-sm btn-outline-primary" title="Abrir surtido" data-accion="surtir-hoja"><i class="bi bi-upc-scan"></i></button>`);
     }
+    // Agregar botón de abrir recepción si el estado es 4 o 5
+    if (estado === 4 || estado === 5) {
+        acciones.push(`<button type="button" class="btn btn-sm btn-outline-success" title="Abrir recepción" data-accion="recibir-hoja"><i class="bi bi-box-arrow-in-down"></i></button>`);
+    }
     return acciones.join('');
 }
 // Inicializar la tabla de hojas de producción usando Tabulator
@@ -76,6 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Redirigir a la página de surtido si la acción es 'surtir-hoja'
                 if (accion === 'surtir-hoja') {
                     window.location.href = `/hh/surtido/${hoja.idHoja}`;
+                    return;
+                }
+                // Redirigir a la página de recepción si la acción es 'recibir-hoja'
+                if (accion === 'recibir-hoja') {
+                    window.location.href = `/hh/recepcion/${hoja.idHoja}`;
                     return;
                 }
                 // Manejar la acción de eliminar hoja de producción

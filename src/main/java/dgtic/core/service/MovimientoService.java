@@ -175,10 +175,16 @@ public class MovimientoService {
         // Obtener la asignación HojaContenedor si se proporciona
         HojaContenedorEntity hojaContenedor = null;
         if (dto.getIdHojaContenedor() != null) {
+            // Obtener la asignación HojaContenedor bloqueada para actualización
             hojaContenedor = hojaContenedorRepository.findByIdForUpdate(dto.getIdHojaContenedor())
                     .orElseThrow(() -> new IllegalArgumentException("La asignación HojaContenedor no existe."));
+            // Validar que la hojaContenedor pertenezca a la hoja de producción
             if (!perteneceHoja(hojaContenedor, hoja)) {
                 throw new IllegalArgumentException("La HojaContenedor no pertenece a la hoja indicada.");
+            }
+            // Validar que la hoja contenedor no esté liberada
+            if (hojaContenedor.getFechaLiberacion() != null) {
+                throw new IllegalArgumentException("La HojaContenedor ya fue liberada y no puede recibir entradas.");
             }
         }
         // Crear el movimiento de entrada y actualizar el detalle y el conjunto

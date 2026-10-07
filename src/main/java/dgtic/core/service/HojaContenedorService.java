@@ -108,6 +108,38 @@ public class HojaContenedorService {
         // Guardar la asignación y devolver el DTO correspondiente
         return Mapper.toHojaContenedorDTO(hojaContenedorRepository.save(asignacion));
     }
+
+    // Reutilizar una utilización activa de recepción o crear una nueva para la hoja
+    @Transactional
+    public HojaContenedorDTO obtenerOAsignarParaRecepcion(Integer idHoja, Integer idContenedor, Integer idUsuario, Integer idBodega) {
+        // Validar que los IDs proporcionados sean válidos
+        validarId(idHoja, "La hoja de producción es obligatoria.");
+        validarId(idContenedor, "El contenedor es obligatorio.");
+        // Validar que el usuario esté autorizado para la bodega especificada
+        obtenerUsuarioAutorizado(idUsuario, idBodega);
+        // Obtener la hoja de producción y validar que pertenezca a la bodega especificada
+        HojaProduccionEntity hoja = hojaProduccionRepository.findByIdForUpdate(idHoja)
+                .orElseThrow(() -> new IllegalArgumentException("La hoja de producción no existe."));
+        validarHojaEnBodega(hoja, idBodega);
+        // Intentar obtener una asignación activa de contenedor para la hoja de producción y contenedor especificados
+        return hojaContenedorRepository
+                .findByHojaProduccion_IdHojaAndContenedor_IdContenedorAndFechaLiberacionIsNull(
+                        idHoja, idContenedor)
+                .map(Mapper::toHojaContenedorDTO)
+                .orElseGet(() -> {
+                    // Una utilización creada directamente en Recepción no tiene carga de SALIDA;
+                    // se cierra al asociarla para conservar la regla de liberar solo cargas cerradas.
+                    HojaContenedorDTO creada = asignar(
+                            HojaContenedorAsignacionDTO.builder()
+                                    .idHoja(idHoja)
+                                    .idContenedor(idContenedor)
+                                    .build(),
+                            idUsuario,
+                            idBodega);
+                    return cerrarCarga(creada.getIdHojaContenedor(), idUsuario, idBodega);
+                });
+    }
+
     // Cerrar la carga de un contenedor asignado a una hoja de producción
     @Transactional
     public HojaContenedorDTO cerrarCarga(Integer idHojaContenedor, Integer idUsuario, Integer idBodega) {
