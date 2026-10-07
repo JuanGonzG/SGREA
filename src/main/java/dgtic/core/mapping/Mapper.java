@@ -351,6 +351,86 @@ public class Mapper {
                 .build();
     }
 
+    // DetalleHojaEntity to RecepcionDetalleDTO using service-calculated return values
+    public static RecepcionDetalleDTO toRecepcionDetalleDTO(
+            DetalleHojaEntity entity,
+            Integer cantidadSurtida,
+            Integer cantidadDevuelta,
+            Integer cantidadPendiente,
+            Integer porcentaje,
+            Boolean completo) {
+        return RecepcionDetalleDTO.builder()
+                .idDetalle(entity.getIdDetalle())
+                .idProducto(entity.getProducto().getIdProducto())
+                .producto(entity.getProducto().getNombre())
+                .cantidadSurtida(cantidadSurtida)
+                .cantidadDevuelta(cantidadDevuelta)
+                .cantidadPendiente(cantidadPendiente)
+                .porcentaje(porcentaje)
+                .completo(completo)
+                .build();
+    }
+
+    // HojaContenedorEntity to RecepcionContenedorDTO using service-calculated state
+    public static RecepcionContenedorDTO toRecepcionContenedorDTO(
+            HojaContenedorEntity entity,
+            Boolean liberado,
+            Boolean puedeRecibirEntradas) {
+        return RecepcionContenedorDTO.builder()
+                .idHojaContenedor(entity.getIdHojaContenedor())
+                .idContenedor(entity.getContenedor().getIdContenedor())
+                .codigo(entity.getContenedor().getCodigo())
+                .fechaAsignacion(entity.getFechaAsignacion())
+                .fechaCierreCarga(entity.getFechaCierreCarga())
+                .fechaLiberacion(entity.getFechaLiberacion())
+                .liberado(liberado)
+                .puedeRecibirEntradas(puedeRecibirEntradas)
+                .build();
+    }
+
+    // HojaContenedorDTO to RecepcionContenedorDTO using service-calculated state
+    public static RecepcionContenedorDTO toRecepcionContenedorDTO(HojaContenedorDTO dto) {
+        boolean liberado = dto.getFechaLiberacion() != null;
+        return RecepcionContenedorDTO.builder()
+                .idHojaContenedor(dto.getIdHojaContenedor())
+                .idContenedor(dto.getContenedor().getIdContenedor())
+                .codigo(dto.getContenedor().getCodigo())
+                .fechaAsignacion(dto.getFechaAsignacion())
+                .fechaCierreCarga(dto.getFechaCierreCarga())
+                .fechaLiberacion(dto.getFechaLiberacion())
+                .liberado(liberado)
+                .puedeRecibirEntradas(!liberado)
+                .build();
+    }
+
+    // MovimientoEntity to the compact representation used by HH Recepcion
+    public static RecepcionMovimientoDTO toRecepcionMovimientoDTO(MovimientoEntity entity) {
+        return RecepcionMovimientoDTO.builder()
+                .idMovimiento(entity.getIdMovimiento())
+                .codigoConjunto(entity.getConjunto().getIdConjunto())
+                .producto(entity.getConjunto().getProducto().getNombre())
+                .codigoContenedor(entity.getHojaContenedor() == null
+                        ? null
+                        : entity.getHojaContenedor().getContenedor().getCodigo())
+                .fecha(entity.getFecha())
+                .usuario(entity.getUsuario().getNombre())
+                .build();
+    }
+
+    // MovimientoDTO to the compact representation used by HH Recepcion
+    public static RecepcionMovimientoDTO toRecepcionMovimientoDTO(MovimientoDTO dto) {
+        return RecepcionMovimientoDTO.builder()
+                .idMovimiento(dto.getIdMovimiento())
+                .codigoConjunto(dto.getConjunto().getIdConjunto())
+                .producto(dto.getConjunto().getProducto().getNombre())
+                .codigoContenedor(dto.getHojaContenedor() == null
+                        ? null
+                        : dto.getHojaContenedor().getContenedor().getCodigo())
+                .fecha(dto.getFecha())
+                .usuario(dto.getUsuario().getNombre())
+                .build();
+    }
+
     // MovimientoSalidaDTO to MovimientoEntity using server-controlled values
     public static MovimientoEntity toMovimientoSalidaEntity(
             MovimientoSalidaDTO dto,

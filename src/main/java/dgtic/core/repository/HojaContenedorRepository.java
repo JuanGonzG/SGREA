@@ -14,6 +14,14 @@ import java.util.Optional;
 public interface HojaContenedorRepository extends JpaRepository<HojaContenedorEntity, Integer> {
     // Buscar todos los registros de HojaContenedor por idHoja
     List<HojaContenedorEntity> findByHojaProduccion_IdHoja(Integer idHoja);
+    // Buscar utilizaciones no liberadas de una hoja
+    List<HojaContenedorEntity> findByHojaProduccion_IdHojaAndFechaLiberacionIsNull(Integer idHoja);
+    // Buscar una utilización activa de un contenedor dentro de una hoja
+    Optional<HojaContenedorEntity> findByHojaProduccion_IdHojaAndContenedor_IdContenedorAndFechaLiberacionIsNull(
+            Integer idHoja, Integer idContenedor);
+    // Buscar una utilización por ID verificando que pertenezca a la hoja indicada
+    Optional<HojaContenedorEntity> findByIdHojaContenedorAndHojaProduccion_IdHoja(
+            Integer idHojaContenedor, Integer idHoja);
     // Buscar la asignación abierta de una hoja, sin cierre de carga ni liberación
     Optional<HojaContenedorEntity> findByHojaProduccion_IdHojaAndFechaCierreCargaIsNullAndFechaLiberacionIsNull(Integer idHoja);
     // Buscar todos los registros de HojaContenedor por idContenedor
@@ -35,6 +43,8 @@ public interface HojaContenedorRepository extends JpaRepository<HojaContenedorEn
     boolean existsByContenedor_IdContenedorAndFechaLiberacionIsNull(Integer idContenedor);
     // Validar si existe un registro de HojaContenedor por idHoja
     boolean existsByHojaProduccion_IdHoja(Integer idHoja);
+    // Validar si una hoja conserva utilizaciones pendientes de liberar
+    boolean existsByHojaProduccion_IdHojaAndFechaLiberacionIsNull(Integer idHoja);
     // Validar si existe un registro de HojaContenedor por idContenedor
     boolean existsByContenedor_IdContenedor(Integer idContenedor);
     // Validar si existe un registro de HojaContenedor por idUsuarioAsignacion
