@@ -1,9 +1,15 @@
 package dgtic.core.mapping;
 
 import dgtic.core.model.dto.*;
+import dgtic.core.model.dto.monitoreo.MonitoreoContenedorDTO;
+import dgtic.core.model.dto.monitoreo.MonitoreoDetalleDTO;
+import dgtic.core.model.dto.monitoreo.MonitoreoEstadoDTO;
+import dgtic.core.model.dto.monitoreo.MonitoreoHojaDTO;
+import dgtic.core.model.dto.monitoreo.MonitoreoMovimientoDTO;
 import dgtic.core.model.entity.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Mapper {
     // UsuarioEntity to UsuarioDTO
@@ -295,6 +301,134 @@ public class Mapper {
                 .usuario(toUsuarioDTO(entity.getUsuario()))
                 .fecha(entity.getFecha())
                 .observaciones(entity.getObservaciones())
+                .build();
+    }
+
+    // HojaProduccionEntity to MonitoreoHojaDTO using service-calculated values
+    public static MonitoreoHojaDTO toMonitoreoHojaDTO(
+            HojaProduccionEntity entity,
+            Integer total,
+            Integer procesado,
+            Integer pendiente,
+            Integer porcentaje,
+            LocalDateTime inicioOperacion,
+            LocalDateTime ultimaActividad,
+            String ultimoOperador,
+            Integer contenedoresPendientes) {
+        return MonitoreoHojaDTO.builder()
+                .idHoja(entity.getIdHoja())
+                .nombreProyecto(entity.getNombreProyecto())
+                .cliente(entity.getCliente())
+                .idEstado(entity.getEstadoHoja().getIdEstadoHoja())
+                .estado(entity.getEstadoHoja().getNombre())
+                .total(total)
+                .procesado(procesado)
+                .pendiente(pendiente)
+                .porcentaje(porcentaje)
+                .inicioOperacion(inicioOperacion)
+                .ultimaActividad(ultimaActividad)
+                .ultimoOperador(ultimoOperador)
+                .contenedoresPendientes(contenedoresPendientes)
+                .build();
+    }
+
+    // DetalleHojaEntity to MonitoreoDetalleDTO using service-calculated values
+    public static MonitoreoDetalleDTO toMonitoreoDetalleDTO(
+            DetalleHojaEntity entity,
+            Integer cantidadSurtida,
+            Integer cantidadDevuelta,
+            Integer pendienteSurtir,
+            Integer pendienteDevolver,
+            Integer porcentajeSurtido,
+            Integer porcentajeRecepcion) {
+        return MonitoreoDetalleDTO.builder()
+                .idDetalle(entity.getIdDetalle())
+                .idProducto(entity.getProducto().getIdProducto())
+                .producto(entity.getProducto().getNombre())
+                .cantidadSolicitada(entity.getCantidadSolicitada())
+                .cantidadSurtida(cantidadSurtida)
+                .cantidadDevuelta(cantidadDevuelta)
+                .pendienteSurtir(pendienteSurtir)
+                .pendienteDevolver(pendienteDevolver)
+                .porcentajeSurtido(porcentajeSurtido)
+                .porcentajeRecepcion(porcentajeRecepcion)
+                .build();
+    }
+
+    // MovimientoEntity to the compact representation used by Monitoreo
+    public static MonitoreoMovimientoDTO toMonitoreoMovimientoDTO(MovimientoEntity entity) {
+        return MonitoreoMovimientoDTO.builder()
+                .idMovimiento(entity.getIdMovimiento())
+                .idTipoMovimiento(entity.getTipoMovimiento().getIdTipoMovimiento())
+                .tipoMovimiento(entity.getTipoMovimiento().getNombre())
+                .codigoConjunto(entity.getConjunto().getIdConjunto())
+                .producto(entity.getConjunto().getProducto().getNombre())
+                .codigoContenedor(entity.getHojaContenedor() == null
+                        ? null
+                        : entity.getHojaContenedor().getContenedor().getCodigo())
+                .fecha(entity.getFecha())
+                .idUsuario(entity.getUsuario().getIdUsuario())
+                .usuario(entity.getUsuario().getNombre())
+                .build();
+    }
+
+    // HojaContenedorEntity to MonitoreoContenedorDTO using service-calculated occupancy
+    public static MonitoreoContenedorDTO toMonitoreoContenedorDTO(
+            HojaContenedorEntity entity,
+            Integer ocupacion) {
+        return MonitoreoContenedorDTO.builder()
+                .idHojaContenedor(entity.getIdHojaContenedor())
+                .idContenedor(entity.getContenedor().getIdContenedor())
+                .codigo(entity.getContenedor().getCodigo())
+                .capacidad(entity.getContenedor().getCapacidad())
+                .ocupacion(ocupacion)
+                .fechaAsignacion(entity.getFechaAsignacion())
+                .fechaCierreCarga(entity.getFechaCierreCarga())
+                .fechaLiberacion(entity.getFechaLiberacion())
+                .cargaCerrada(entity.getFechaCierreCarga() != null)
+                .liberado(entity.getFechaLiberacion() != null)
+                .build();
+    }
+
+    // HojaProduccionEntity to MonitoreoEstadoDTO using service-calculated values
+    public static MonitoreoEstadoDTO toMonitoreoEstadoDTO(
+            HojaProduccionEntity entity,
+            Integer totalSolicitado,
+            Integer totalSurtido,
+            Integer totalDevuelto,
+            Integer pendienteSurtir,
+            Integer pendienteDevolver,
+            Integer porcentajeSurtido,
+            Integer porcentajeRecepcion,
+            LocalDateTime inicioSurtido,
+            LocalDateTime inicioRecepcion,
+            LocalDateTime ultimaActividad,
+            String ultimoOperador,
+            List<MonitoreoDetalleDTO> detalles,
+            List<MonitoreoContenedorDTO> contenedores,
+            List<MonitoreoMovimientoDTO> movimientos) {
+        return MonitoreoEstadoDTO.builder()
+                .idHoja(entity.getIdHoja())
+                .nombreProyecto(entity.getNombreProyecto())
+                .cliente(entity.getCliente())
+                .fechaSalida(entity.getFechaSalida())
+                .fechaEstimadaRegreso(entity.getFechaEstimadaRegreso())
+                .idEstado(entity.getEstadoHoja().getIdEstadoHoja())
+                .estado(entity.getEstadoHoja().getNombre())
+                .totalSolicitado(totalSolicitado)
+                .totalSurtido(totalSurtido)
+                .totalDevuelto(totalDevuelto)
+                .pendienteSurtir(pendienteSurtir)
+                .pendienteDevolver(pendienteDevolver)
+                .porcentajeSurtido(porcentajeSurtido)
+                .porcentajeRecepcion(porcentajeRecepcion)
+                .inicioSurtido(inicioSurtido)
+                .inicioRecepcion(inicioRecepcion)
+                .ultimaActividad(ultimaActividad)
+                .ultimoOperador(ultimoOperador)
+                .detalles(detalles)
+                .contenedores(contenedores)
+                .movimientos(movimientos)
                 .build();
     }
 

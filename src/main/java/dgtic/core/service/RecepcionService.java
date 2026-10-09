@@ -39,6 +39,7 @@ public class RecepcionService {
     private static final int ESTADO_EN_LLAMADO = 4;
     private static final int ESTADO_RECIBIENDO = 5;
     private static final int ESTADO_COMPLETADO = 6;
+    private static final int TIPO_ENTRADA = 2;
 
     @Autowired
     private HojaProduccionRepository hojaProduccionRepository;
@@ -101,9 +102,10 @@ public class RecepcionService {
                 .filter(contenedor -> contenedor.getFechaLiberacion() == null)
                 .map(this::mapearContenedor)
                 .toList();
-        // Obtener los últimos movimientos de la hoja de producción
+        // Obtener únicamente los últimos movimientos de ENTRADA de la hoja
         List<RecepcionMovimientoDTO> movimientos = movimientoRepository
-                .findTop5ByHojaProduccion_IdHojaOrderByFechaDescIdMovimientoDesc(idHoja)
+                .findTop5ByHojaProduccion_IdHojaAndTipoMovimiento_IdTipoMovimientoOrderByFechaDescIdMovimientoDesc(
+                        idHoja, TIPO_ENTRADA)
                 .stream()
                 .map(this::mapearMovimiento)
                 .toList();
