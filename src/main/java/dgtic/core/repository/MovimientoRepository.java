@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,8 @@ public interface MovimientoRepository extends JpaRepository<MovimientoEntity, In
     List<MovimientoEntity> findByHojaProduccion_IdHojaAndTipoMovimiento_IdTipoMovimientoOrderByFechaDescIdMovimientoDesc(Integer idHoja, Integer idTipoMovimiento);
     // Buscar la primera salida o entrada de una hoja según el tipo indicado
     Optional<MovimientoEntity> findFirstByHojaProduccion_IdHojaAndTipoMovimiento_IdTipoMovimientoOrderByFechaAscIdMovimientoAsc(Integer idHoja, Integer idTipoMovimiento);
+    // Buscar el último movimiento de una hoja según el tipo indicado
+    Optional<MovimientoEntity> findFirstByHojaProduccion_IdHojaAndTipoMovimiento_IdTipoMovimientoOrderByFechaDescIdMovimientoDesc(Integer idHoja, Integer idTipoMovimiento);
     // Buscar el último movimiento de una hoja
     Optional<MovimientoEntity> findFirstByHojaProduccion_IdHojaOrderByFechaDescIdMovimientoDesc(Integer idHoja);
     // Buscar movimientos por idDetalle ordenados por fecha ascendente y idMovimiento ascendente
@@ -43,6 +46,28 @@ public interface MovimientoRepository extends JpaRepository<MovimientoEntity, In
 
     // Contar movimientos por idHojaContenedor e idTipoMovimiento
     long countByHojaContenedor_IdHojaContenedorAndTipoMovimiento_IdTipoMovimiento(Integer idHojaContenedor, Integer idTipoMovimiento);
+
+    // Buscar movimientos históricos para Reportes con filtros opcionales y aislamiento por bodega
+    @Query("""
+            select m
+            from MovimientoEntity m
+            where m.hojaProduccion.bodega.idBodega = :idBodega
+              and (:fechaDesde is null or m.fecha >= :fechaDesde)
+              and (:fechaHasta is null or m.fecha <= :fechaHasta)
+              and (:idTipoMovimiento is null or m.tipoMovimiento.idTipoMovimiento = :idTipoMovimiento)
+              and (:idHoja is null or m.hojaProduccion.idHoja = :idHoja)
+              and (:codigoConjunto is null or lower(m.conjunto.idConjunto) like lower(concat('%', :codigoConjunto, '%')))
+              and (:idUsuario is null or m.usuario.idUsuario = :idUsuario)
+            order by m.fecha desc, m.idMovimiento desc
+            """)
+    List<MovimientoEntity> buscarParaReporte(
+            @Param("idBodega") Integer idBodega,
+            @Param("fechaDesde") LocalDateTime fechaDesde,
+            @Param("fechaHasta") LocalDateTime fechaHasta,
+            @Param("idTipoMovimiento") Integer idTipoMovimiento,
+            @Param("idHoja") Integer idHoja,
+            @Param("codigoConjunto") String codigoConjunto,
+            @Param("idUsuario") Integer idUsuario);
 
     // Validar si existe una salida pendiente por idHoja, idConjunto e idTipoMovimiento
     @Query("select case when count(m) > 0 then true else false end "

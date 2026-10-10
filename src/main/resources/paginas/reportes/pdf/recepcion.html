@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/><title th:text="${titulo}">SGREA - Recepción</title>
+    <style>
+        @page { size: A4 landscape; margin: 12mm; }
+        body { font-family: sans-serif; color: #17202a; font-size: 9pt; } h1 { margin: 0 0 4px; font-size: 17pt; } h2 { margin: 16px 0 6px; font-size: 11pt; border-bottom: 1px solid #17202a; padding-bottom: 3px; } .muted { color:#566573; font-size:8pt; } .meta, .data { width:100%; border-collapse:collapse; } .meta td { padding:3px 8px 3px 0; } .label { font-weight:bold; } .data th, .data td { border:1px solid #aab7b8; padding:4px; } .data th { background:#d5f5e3; text-align:left; } thead { display:table-header-group; } tr { page-break-inside:avoid; } .number { text-align:right; }
+    </style>
+</head>
+<body>
+    <h1>Reporte de recepción · Hoja <span th:text="${reporte.idHoja}"></span></h1>
+    <div class="muted">Generado por SGREA el <span th:text="${generadoEn}"></span> · Usuario: <span th:text="${nombreUsuario}"></span> · Bodega: <span th:text="${nombreBodega}"></span></div>
+    <table class="meta"><tr><td class="label">Proyecto:</td><td th:text="${reporte.nombreProyecto}"></td><td class="label">Cliente:</td><td th:text="${reporte.cliente}"></td><td class="label">Periodo:</td><td th:text="|${reporte.inicioOperacion ?: 'No registrado'} - ${reporte.finOperacion ?: 'No registrado'}|"></td></tr></table>
+    <h2>Movimientos de entrada</h2>
+    <table class="data"><thead><tr><th>Fecha</th><th>Conjunto</th><th>Producto</th><th>Contenedor</th><th>Usuario</th><th>Observaciones</th></tr></thead><tbody>
+        <tr th:each="movimiento : ${reporte.movimientos}"><td th:text="${movimiento.fecha}"></td><td th:text="${movimiento.codigoConjunto}"></td><td th:text="${movimiento.producto}"></td><td th:text="${movimiento.codigoContenedor ?: 'Sin contenedor'}"></td><td th:text="${movimiento.usuario ?: 'No disponible'}"></td><td th:text="${movimiento.observaciones ?: ''}"></td></tr>
+        <tr th:if="${#lists.isEmpty(reporte.movimientos)}"><td colspan="6">No hay movimientos de entrada registrados.</td></tr>
+    </tbody></table>
+</body>
+</html>

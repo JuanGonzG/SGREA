@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import jakarta.persistence.LockModeType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,23 @@ public interface HojaContenedorRepository extends JpaRepository<HojaContenedorEn
     List<HojaContenedorEntity> findByHojaProduccion_IdHoja(Integer idHoja);
     // Buscar utilizaciones de una hoja ordenadas por fecha de asignación
     List<HojaContenedorEntity> findByHojaProduccion_IdHojaOrderByFechaAsignacionAscIdHojaContenedorAsc(Integer idHoja);
+    // Buscar utilizaciones históricas para Reportes con filtros opcionales y aislamiento por bodega
+    @Query("""
+            select hc
+            from HojaContenedorEntity hc
+            where hc.hojaProduccion.bodega.idBodega = :idBodega
+              and (:fechaDesde is null or hc.fechaAsignacion >= :fechaDesde)
+              and (:fechaHasta is null or hc.fechaAsignacion <= :fechaHasta)
+              and (:idHoja is null or hc.hojaProduccion.idHoja = :idHoja)
+              and (:codigoContenedor is null or lower(hc.contenedor.codigo) like lower(concat('%', :codigoContenedor, '%')))
+            order by hc.fechaAsignacion desc, hc.idHojaContenedor desc
+            """)
+    List<HojaContenedorEntity> buscarParaReporte(
+            @Param("idBodega") Integer idBodega,
+            @Param("fechaDesde") LocalDateTime fechaDesde,
+            @Param("fechaHasta") LocalDateTime fechaHasta,
+            @Param("idHoja") Integer idHoja,
+            @Param("codigoContenedor") String codigoContenedor);
     // Buscar utilizaciones no liberadas de una hoja
     List<HojaContenedorEntity> findByHojaProduccion_IdHojaAndFechaLiberacionIsNull(Integer idHoja);
     // Buscar una utilización activa de un contenedor dentro de una hoja

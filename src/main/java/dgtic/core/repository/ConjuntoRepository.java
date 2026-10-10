@@ -17,6 +17,21 @@ public interface ConjuntoRepository extends JpaRepository<ConjuntoEntity, String
     List<ConjuntoEntity> findByProducto_IdProducto(Integer idProducto);
     // Buscar Conjuntos por idBodega y idEstadoConjunto
     List<ConjuntoEntity> findByProducto_Bodega_IdBodegaAndEstadoConjunto_IdEstadoConjunto(Integer idBodega, Integer idEstadoConjunto);
+    // Buscar inventario histórico para Reportes con filtros opcionales y aislamiento por bodega
+    @Query("""
+            select c
+            from ConjuntoEntity c
+            where c.producto.bodega.idBodega = :idBodega
+              and (:idProducto is null or c.producto.idProducto = :idProducto)
+              and (:idEstadoConjunto is null or c.estadoConjunto.idEstadoConjunto = :idEstadoConjunto)
+              and (:codigoConjunto is null or lower(c.idConjunto) like lower(concat('%', :codigoConjunto, '%')))
+            order by c.producto.nombre asc, c.idConjunto asc
+            """)
+    List<ConjuntoEntity> buscarParaReporte(
+            @Param("idBodega") Integer idBodega,
+            @Param("idProducto") Integer idProducto,
+            @Param("idEstadoConjunto") Integer idEstadoConjunto,
+            @Param("codigoConjunto") String codigoConjunto);
     // Buscar Conjunto por orden de idConjunto descendente
     Optional<ConjuntoEntity> findTopByOrderByIdConjuntoDesc();
     // Buscar Conjunto por idConjunto con bloqueo pesimista para actualización

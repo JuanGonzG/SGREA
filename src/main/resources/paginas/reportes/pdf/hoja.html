@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${titulo}">SGREA - Hoja de producción</title>
+    <style>
+        @page { size: A4 portrait; margin: 14mm; }
+        body { font-family: sans-serif; color: #17202a; font-size: 10pt; }
+        h1 { margin: 0 0 4px; font-size: 18pt; }
+        h2 { margin: 18px 0 7px; font-size: 12pt; border-bottom: 1px solid #17202a; padding-bottom: 3px; }
+        .muted { color: #566573; font-size: 8pt; }
+        .meta { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .meta td { padding: 3px 8px 3px 0; vertical-align: top; }
+        .label { font-weight: bold; }
+        table.data { width: 100%; border-collapse: collapse; }
+        table.data th, table.data td { border: 1px solid #aab7b8; padding: 5px; }
+        table.data th { background: #d6eaf8; text-align: left; }
+        .number { text-align: right; }
+        .summary { display: inline-block; margin: 0 12px 8px 0; padding: 5px 8px; border: 1px solid #aab7b8; }
+        thead { display: table-header-group; }
+        tr { page-break-inside: avoid; }
+    </style>
+</head>
+<body>
+    <h1>Hoja de producción <span th:text="${reporte.idHoja}"></span></h1>
+    <div class="muted">Generado por SGREA el <span th:text="${generadoEn}"></span> · Usuario: <span th:text="${nombreUsuario}"></span> · Bodega: <span th:text="${nombreBodega}"></span></div>
+    <table class="meta">
+        <tr><td class="label">Proyecto:</td><td th:text="${reporte.nombreProyecto}"></td><td class="label">Cliente:</td><td th:text="${reporte.cliente}"></td></tr>
+        <tr><td class="label">Estado:</td><td th:text="${reporte.estado ?: 'No disponible'}"></td><td class="label">Salida:</td><td th:text="${reporte.fechaSalida ?: 'No disponible'}"></td></tr>
+        <tr><td class="label">Regreso estimado:</td><td th:text="${reporte.fechaEstimadaRegreso ?: 'No disponible'}"></td></tr>
+    </table>
+    <h2>Resumen</h2>
+    <span class="summary">Solicitado: <b th:text="${reporte.totalSolicitado}"></b></span>
+    <span class="summary">Surtido: <b th:text="${reporte.totalSurtido}"></b> (<span th:text="${reporte.porcentajeSurtido}"></span>%)</span>
+    <span class="summary">Devuelto: <b th:text="${reporte.totalDevuelto}"></b> (<span th:text="${reporte.porcentajeRecepcion}"></span>%)</span>
+    <h2>Detalle</h2>
+    <table class="data">
+        <thead><tr><th>Producto</th><th class="number">Solicitado</th><th class="number">Surtido</th><th class="number">Devuelto</th><th class="number">Pendiente surtir</th><th class="number">Pendiente devolver</th></tr></thead>
+        <tbody>
+        <tr th:each="detalle : ${reporte.detalles}">
+            <td th:text="${detalle.producto}"></td><td class="number" th:text="${detalle.cantidadSolicitada}"></td><td class="number" th:text="${detalle.cantidadSurtida}"></td><td class="number" th:text="${detalle.cantidadDevuelta}"></td><td class="number" th:text="${detalle.pendienteSurtir}"></td><td class="number" th:text="${detalle.pendienteDevolver}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(reporte.detalles)}"><td colspan="6">La hoja no tiene detalles registrados.</td></tr>
+        </tbody>
+    </table>
+</body>
+</html>
