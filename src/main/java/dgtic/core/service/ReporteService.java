@@ -7,6 +7,7 @@ import dgtic.core.model.dto.reporte.ReporteConjuntoFiltroDTO;
 import dgtic.core.model.dto.reporte.ReporteContenedorDTO;
 import dgtic.core.model.dto.reporte.ReporteContenedorFiltroDTO;
 import dgtic.core.model.dto.reporte.ReporteHojaDTO;
+import dgtic.core.model.dto.reporte.ReporteHojaDetalleDTO;
 import dgtic.core.model.dto.reporte.ReporteHojaFiltroDTO;
 import dgtic.core.model.dto.reporte.ReporteMovimientoDTO;
 import dgtic.core.model.dto.reporte.ReporteMovimientoFiltroDTO;
@@ -191,6 +192,34 @@ public class ReporteService {
     public ReporteOperacionHojaDTO obtenerRecepcion(Integer idUsuario, Integer idBodega, Integer idHoja) {
         return obtenerOperacion(idUsuario, idBodega, idHoja, TIPO_ENTRADA);
     }
+    // Método para obtener el detalle de una hoja de producción
+    public ReporteHojaDetalleDTO obtenerHoja(Integer idUsuario, Integer idBodega, Integer idHoja) {
+        // Validar el acceso a los reportes para el usuario y la bodega
+        validarAccesoReportes(idUsuario, idBodega);
+        // Obtener la hoja de producción autorizada y sus detalles
+        HojaProduccionEntity hoja = obtenerHojaAutorizada(idHoja, idBodega);
+        List<DetalleHojaEntity> detalles = detalleHojaRepository
+                .findByHojaProduccionEntity_IdHoja(idHoja);
+        // Calcular los totales de solicitado, surtido y devuelto
+        int solicitado = totalSolicitado(detalles);
+        int surtido = totalSurtido(detalles);
+        int devuelto = totalDevuelto(detalles);
+        // Construir y retornar el DTO del reporte de detalle de la hoja de producción
+        return ReporteHojaDetalleDTO.builder()
+                .idHoja(hoja.getIdHoja())
+                .nombreProyecto(hoja.getNombreProyecto())
+                .cliente(hoja.getCliente())
+                .estado(hoja.getEstadoHoja() == null ? null : hoja.getEstadoHoja().getNombre())
+                .fechaSalida(hoja.getFechaSalida())
+                .fechaEstimadaRegreso(hoja.getFechaEstimadaRegreso())
+                .totalSolicitado(solicitado)
+                .totalSurtido(surtido)
+                .totalDevuelto(devuelto)
+                .porcentajeSurtido(porcentaje(surtido, solicitado))
+                .porcentajeRecepcion(porcentaje(devuelto, surtido))
+                .detalles(detalles.stream().map(this::mapearDetalleHoja).toList())
+                .build();
+    }
     // Método privado para obtener el reporte de operación de una hoja de producción según el tipo de movimiento
     private ReporteOperacionHojaDTO obtenerOperacion(Integer idUsuario, Integer idBodega, Integer idHoja, int tipoMovimiento) {
         // Validar el acceso a los reportes para el usuario y la bodega
@@ -340,6 +369,23 @@ public class ReporteService {
                 .cantidadSolicitada(valor(detalle.getCantidadSolicitada()))
                 .cantidadSurtida(valor(detalle.getCantidadSurtida()))
                 .cantidadDevuelta(valor(detalle.getCantidadDevuelta()))
+                .build();
+    }
+    // Método privado para mapear una entidad de detalle de hoja a un DTO de reporte de detalle de hoja
+    private ReporteHojaDetalleDTO.Detalle mapearDetalleHoja(DetalleHojaEntity detalle) {
+        // Calcular las cantidades solicitadas, surtidas y devueltas, asegurando que sean valores enteros válidos
+        int solicitada = valor(detalle.getCantidadSolicitada());
+        int surtida = valor(detalle.getCantidadSurtida());
+        int devuelta = valor(detalle.getCantidadDevuelta());
+        // Construir y retornar el DTO del detalle de la hoja de producción
+        return ReporteHojaDetalleDTO.Detalle.builder()
+                .idProducto(detalle.getProducto().getIdProducto())
+                .producto(detalle.getProducto().getNombre())
+                .cantidadSolicitada(solicitada)
+                .cantidadSurtida(surtida)
+                .cantidadDevuelta(devuelta)
+                .pendienteSurtir(Math.max(solicitada - surtida, 0))
+                .pendienteDevolver(Math.max(surtida - devuelta, 0))
                 .build();
     }
     // Métodos privados para calcular totales y porcentajes
