@@ -280,6 +280,12 @@
                                     <p>Recepción</p>
                                 </a>
                             </li>
+                            <li class="nav-item" th:if="${session.idRol == 1 or session.idRol == 2}">
+                                <a th:href="@{/monitoreo}" class="nav-link">
+                                    <i class="nav-icon bi bi-activity"></i>
+                                    <p>Monitoreo</p>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                 </div>

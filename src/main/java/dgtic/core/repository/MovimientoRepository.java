@@ -6,12 +6,21 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MovimientoRepository extends JpaRepository<MovimientoEntity, Integer> {
     // Buscar movimientos por idHoja ordenados por fecha ascendente y idMovimiento ascendente
     List<MovimientoEntity> findByHojaProduccion_IdHojaOrderByFechaAscIdMovimientoAsc(Integer idHoja);
     // Buscar los últimos cinco movimientos de una hoja para reconstruir la pantalla HH
     List<MovimientoEntity> findTop5ByHojaProduccion_IdHojaOrderByFechaDescIdMovimientoDesc(Integer idHoja);
+    // Buscar los últimos cinco movimientos de entrada de una hoja para HH Recepción
+    List<MovimientoEntity> findTop5ByHojaProduccion_IdHojaAndTipoMovimiento_IdTipoMovimientoOrderByFechaDescIdMovimientoDesc(Integer idHoja, Integer idTipoMovimiento);
+    // Buscar todos los movimientos de un tipo para la auditoría en vivo de Monitoreo
+    List<MovimientoEntity> findByHojaProduccion_IdHojaAndTipoMovimiento_IdTipoMovimientoOrderByFechaDescIdMovimientoDesc(Integer idHoja, Integer idTipoMovimiento);
+    // Buscar la primera salida o entrada de una hoja según el tipo indicado
+    Optional<MovimientoEntity> findFirstByHojaProduccion_IdHojaAndTipoMovimiento_IdTipoMovimientoOrderByFechaAscIdMovimientoAsc(Integer idHoja, Integer idTipoMovimiento);
+    // Buscar el último movimiento de una hoja
+    Optional<MovimientoEntity> findFirstByHojaProduccion_IdHojaOrderByFechaDescIdMovimientoDesc(Integer idHoja);
     // Buscar movimientos por idDetalle ordenados por fecha ascendente y idMovimiento ascendente
     List<MovimientoEntity> findByConjunto_IdConjuntoOrderByFechaAscIdMovimientoAsc(String idConjunto);
     // Buscar movimientos por idHojaContenedor ordenados por fecha ascendente y idMovimiento ascendente
@@ -30,12 +39,10 @@ public interface MovimientoRepository extends JpaRepository<MovimientoEntity, In
     boolean existsByUsuario_IdUsuario(Integer idUsuario);
 
     // Validar si existen movimientos por idHoja, idConjunto e idTipoMovimiento
-    boolean existsByHojaProduccion_IdHojaAndConjunto_IdConjuntoAndTipoMovimiento_IdTipoMovimiento(
-            Integer idHoja, String idConjunto, Integer idTipoMovimiento);
+    boolean existsByHojaProduccion_IdHojaAndConjunto_IdConjuntoAndTipoMovimiento_IdTipoMovimiento(Integer idHoja, String idConjunto, Integer idTipoMovimiento);
 
     // Contar movimientos por idHojaContenedor e idTipoMovimiento
-    long countByHojaContenedor_IdHojaContenedorAndTipoMovimiento_IdTipoMovimiento(
-            Integer idHojaContenedor, Integer idTipoMovimiento);
+    long countByHojaContenedor_IdHojaContenedorAndTipoMovimiento_IdTipoMovimiento(Integer idHojaContenedor, Integer idTipoMovimiento);
 
     // Validar si existe una salida pendiente por idHoja, idConjunto e idTipoMovimiento
     @Query("select case when count(m) > 0 then true else false end "

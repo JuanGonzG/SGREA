@@ -14,8 +14,9 @@ public interface HojaProduccionRepository extends JpaRepository<HojaProduccionEn
     // Buscar hojas de producción por idBodega
     List<HojaProduccionEntity> findByBodega_IdBodega(Integer idBodega);
     // Buscar hojas de recepción de una bodega por los estados operativos indicados
-    List<HojaProduccionEntity> findByBodega_IdBodegaAndEstadoHoja_IdEstadoHojaIn(
-            Integer idBodega, List<Integer> estados);
+    List<HojaProduccionEntity> findByBodega_IdBodegaAndEstadoHoja_IdEstadoHojaIn(Integer idBodega, List<Integer> estados);
+    // Buscar hojas activas de una bodega ordenadas por antigüedad operativa
+    List<HojaProduccionEntity> findByBodega_IdBodegaAndEstadoHoja_IdEstadoHojaInOrderByFechaSalidaAscIdHojaAsc(Integer idBodega, List<Integer> estados);
     // Validar si existen hojas de producción por idBodega
     boolean existsByBodega_IdBodega(Integer idBodega);
     // Buscar hoja de producción por idHoja con bloqueo pesimista para actualización

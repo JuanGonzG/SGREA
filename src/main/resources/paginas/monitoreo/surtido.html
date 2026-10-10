@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, 'SGREA | Monitoreo de Surtido')}">
+
+<main class="app-main" th:attr="data-id-hoja=${idHoja},data-tipo-monitoreo='surtido'">
+    <style>
+        .monitoreo-sticky-card {
+            position: sticky;
+            top: 1rem;
+        }
+
+        .monitoreo-placeholder {
+            min-height: 7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bs-secondary-color);
+            background-color: var(--bs-tertiary-bg);
+            border: 1px dashed var(--bs-border-color);
+            border-radius: .375rem;
+            text-align: center;
+        }
+
+        .monitoreo-list-container {
+            width: 100%;
+            min-height: 7rem;
+        }
+
+        .monitoreo-list-container .list-group,
+        .monitoreo-list-container .list-group-item {
+            width: 100%;
+        }
+
+        @media (max-width: 991.98px) {
+            .monitoreo-sticky-card {
+                position: static;
+            }
+        }
+    </style>
+
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                <div>
+                    <span class="badge text-bg-primary mb-2">Hoja #<span th:text="${idHoja}">0</span></span>
+                    <h1 class="mb-0 fs-3">Monitoreo de Surtido</h1>
+                    <small class="text-muted">Auditoría en vivo del surtido, Contenedores y movimientos.</small>
+                </div>
+                <a th:href="@{/monitoreo}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Regresar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between gap-3">
+                        <div>
+                            <h2 id="monitoreoSurtidoProyecto" class="fs-4 mb-1">Cargando proyecto...</h2>
+                            <p class="text-muted mb-1">Cliente: <span id="monitoreoSurtidoCliente">Cargando...</span></p>
+                            <small class="text-muted">Estado: <span id="monitoreoSurtidoEstado">Cargando...</span></small>
+                        </div>
+                        <div class="text-md-end">
+                            <div class="text-muted small">Avance de surtido</div>
+                            <div class="fs-3 fw-semibold"><span id="monitoreoSurtidoPorcentaje">0</span>%</div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" role="progressbar" aria-label="Avance de surtido"
+                         aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <div id="monitoreoSurtidoProgreso" class="progress-bar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="row g-3 mt-2 text-center">
+                        <div class="col-4"><div class="text-muted small">Solicitado</div><strong id="monitoreoTotalSolicitado">0</strong></div>
+                        <div class="col-4"><div class="text-muted small">Surtido</div><strong id="monitoreoTotalSurtido">0</strong></div>
+                        <div class="col-4"><div class="text-muted small">Pendiente</div><strong id="monitoreoPendienteSurtir">0</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12 col-lg-7">
+                    <section class="card mb-4" aria-labelledby="tituloProductosSurtido">
+                        <div class="card-header"><h2 id="tituloProductosSurtido" class="card-title fs-5 mb-0"><i class="bi bi-list-check me-2"></i>Productos</h2></div>
+                        <div class="card-body"><div id="monitoreoDetallesSurtido" class="monitoreo-list-container">Cargando productos...</div></div>
+                    </section>
+                    <section class="card" aria-labelledby="tituloActividadSurtido">
+                        <div class="card-header"><h2 id="tituloActividadSurtido" class="card-title fs-5 mb-0"><i class="bi bi-clock-history me-2"></i>Movimientos de salida</h2></div>
+                        <div class="card-body"><div id="monitoreoMovimientosSurtido" class="monitoreo-list-container">Cargando movimientos...</div></div>
+                    </section>
+                </div>
+                <div class="col-12 col-lg-5">
+                    <section class="card monitoreo-sticky-card" aria-labelledby="tituloContenedoresSurtido">
+                        <div class="card-header"><h2 id="tituloContenedoresSurtido" class="card-title fs-5 mb-0"><i class="bi bi-box-seam me-2"></i>Contenedores</h2></div>
+                        <div class="card-body"><div id="monitoreoContenedoresSurtido" class="monitoreo-list-container">Cargando Contenedores...</div></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/sgrea/monitoreo.js(v=4)}"></script>
+</main>
+</html>
