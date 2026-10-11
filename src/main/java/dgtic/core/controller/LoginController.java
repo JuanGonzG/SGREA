@@ -115,6 +115,7 @@ public class LoginController {
 
             // Guardar el usuario en el HttpSession
             session.setAttribute("nombreUsuario", usuarioDTO.getNombre().split(" ")[0]);
+            session.setAttribute("username", usuarioDTO.getUsername());
             session.setAttribute("nombreCompletoUsuario", usuarioDTO.getNombre());
             session.setAttribute("rolUsuario", usuarioDTO.getRol().getNombre());
             session.setAttribute("idRol", usuarioDTO.getRol().getIdRol());
