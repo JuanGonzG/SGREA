@@ -5,15 +5,137 @@
     <main class="app-main">
         <div class="app-content-header">
             <div class="container-fluid">
-                <h1 class="mb-0 fs-3">Inicio</h1>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h1 class="mb-1 fs-3">Bienvenido, <span th:text="${session.nombreUsuario}">usuario</span></h1>
+                        <p class="text-muted mb-0">Centro de trabajo de SGREA para tu bodega activa.</p>
+                    </div>
+                    <div class="text-md-end">
+                        <span class="badge text-bg-primary me-1">
+                            <i class="bi bi-person-badge-fill me-1"></i>
+                            <span th:text="${session.rolUsuario}">Rol</span>
+                        </span>
+                        <span class="badge text-bg-secondary">
+                            <i class="bi bi-house-gear-fill me-1"></i>
+                            <span th:text="${session.nombreBodega}">Bodega</span>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="app-content">
             <div class="container-fluid">
-                <div class="card">
-                    <div class="card-body">
-                        Bienvenido al sistema SGREA. En esta página de inicio, encontrarás información general sobre el sistema y su funcionalidad. Desde aquí, podrás acceder a las diferentes secciones del sistema, como la gestión de conjuntos, hojas de producción, ajustes de usuario y bodegas. Explora las opciones disponibles y aprovecha al máximo las capacidades del sistema para optimizar tus procesos.
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-lg-8">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-primary-subtle text-primary p-3 fs-3">
+                                    <i class="bi bi-box-seam-fill"></i>
+                                </div>
+                                <div>
+                                    <h2 class="h5 mb-1">Operación de almacén</h2>
+                                    <p class="text-muted mb-0" th:if="${esAdministrador}">Administra los catálogos y supervisa el avance operativo de tu bodega.</p>
+                                    <p class="text-muted mb-0" th:if="${esSupervisor}">Consulta el avance de las operaciones y revisa el histórico de tu bodega.</p>
+                                    <p class="text-muted mb-0" th:if="${esOperador}">Ejecuta las tareas de surtido y recepción asignadas a tu bodega.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="text-muted small mb-1">Usuario activo</div>
+                                <div class="fw-semibold" th:text="${session.nombreCompletoUsuario}">Nombre completo</div>
+                                <div class="text-muted small" th:text="|@${session.username}|">@username</div>
+                                <div class="mt-3 small text-muted">
+                                    <i class="bi bi-shield-check me-1"></i>
+                                    Acceso según rol y bodega autorizada
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h2 class="h5 mb-0">Acciones rápidas</h2>
+                    <span class="text-muted small">Accesos disponibles para tu rol</span>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${esAdministrador}">
+                        <a th:href="@{/usuarios}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-people-fill fs-3 text-primary"></i><h3 class="h6 mt-3 mb-1 text-body">Usuarios</h3><p class="small text-muted mb-0">Gestiona usuarios, roles y bodegas.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${esAdministrador}">
+                        <a th:href="@{/bodega}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-house-gear-fill fs-3 text-primary"></i><h3 class="h6 mt-3 mb-1 text-body">Bodegas</h3><p class="small text-muted mb-0">Consulta y administra bodegas.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${esAdministrador}">
+                        <a th:href="@{/productos/}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-box-seam-fill fs-3 text-primary"></i><h3 class="h6 mt-3 mb-1 text-body">Productos</h3><p class="small text-muted mb-0">Administra el catálogo de productos.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${esAdministrador}">
+                        <a th:href="@{/conjunto}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-upc-scan fs-3 text-primary"></i><h3 class="h6 mt-3 mb-1 text-body">Conjuntos</h3><p class="small text-muted mb-0">Administra las unidades físicas del inventario.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${esAdministrador}">
+                        <a th:href="@{/contenedor}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-suitcase-lg-fill fs-3 text-primary"></i><h3 class="h6 mt-3 mb-1 text-body">Contenedores</h3><p class="small text-muted mb-0">Administra los contenedores reutilizables.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${esAdministrador or esSupervisor}">
+                        <a th:href="@{/hojas-produccion}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-file-earmark-text-fill fs-3 text-primary"></i><h3 class="h6 mt-3 mb-1 text-body">Hojas de producción</h3><p class="small text-muted mb-0">Consulta y gestiona hojas de tu bodega.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${esAdministrador or esOperador}">
+                        <a th:href="@{/hh/surtido}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-upc-scan fs-3 text-success"></i><h3 class="h6 mt-3 mb-1 text-body">Surtido</h3><p class="small text-muted mb-0">Registra salidas de conjuntos.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${esAdministrador or esOperador}">
+                        <a th:href="@{/hh/recepcion}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-box-arrow-in-down fs-3 text-success"></i><h3 class="h6 mt-3 mb-1 text-body">Recepción</h3><p class="small text-muted mb-0">Registra entradas y devoluciones.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${puedeSupervisar}">
+                        <a th:href="@{/monitoreo}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-activity fs-3 text-info"></i><h3 class="h6 mt-3 mb-1 text-body">Monitoreo</h3><p class="small text-muted mb-0">Observa las operaciones activas.</p></div>
+                        </a>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3" th:if="${puedeSupervisar}">
+                        <a th:href="@{/reportes}" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body"><i class="bi bi-file-earmark-bar-graph-fill fs-3 text-info"></i><h3 class="h6 mt-3 mb-1 text-body">Reportes</h3><p class="small text-muted mb-0">Consulta el histórico de la operación.</p></div>
+                        </a>
+                    </div>
+                </div>
+
+                <div th:if="${puedeSupervisar}">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h2 class="h5 mb-0">Resumen operativo</h2>
+                        <a th:href="@{/monitoreo}" class="small text-decoration-none">Ver monitoreo <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div><div class="text-muted small">Surtidos activos</div><div class="display-6 fw-semibold" th:text="${#lists.size(surtidosActivos)}">0</div><div class="small text-muted">Por surtir o surtiendo</div></div>
+                                    <i class="bi bi-upc-scan fs-1 text-success opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div><div class="text-muted small">Recepciones activas</div><div class="display-6 fw-semibold" th:text="${#lists.size(recepcionesActivas)}">0</div><div class="small text-muted">En llamado o recibiendo</div></div>
+                                    <i class="bi bi-box-arrow-in-down fs-1 text-info opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

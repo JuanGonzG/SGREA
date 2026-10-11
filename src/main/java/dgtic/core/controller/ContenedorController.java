@@ -171,6 +171,8 @@ public class ContenedorController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException exception) {
             return buildErrorResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+        } catch (IllegalStateException exception) {
+            return buildErrorResponse(HttpStatus.CONFLICT, exception.getMessage());
         } catch (DataIntegrityViolationException exception) {
             return buildErrorResponse(HttpStatus.CONFLICT,
                     "No se puede eliminar el contenedor porque tiene dependencias.");
