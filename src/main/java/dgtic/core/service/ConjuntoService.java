@@ -12,6 +12,7 @@ import dgtic.core.repository.ConjuntoRepository;
 import dgtic.core.repository.EstadoConjuntoRepository;
 import dgtic.core.repository.MovimientoRepository;
 import dgtic.core.repository.ProductoRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ConjuntoService {
     // Definición de constantes para los estados de conjunto
     private static final int ESTADO_DISPONIBLE = 1;
@@ -91,6 +93,8 @@ public class ConjuntoService {
         // Validar que el producto pertenezca a la bodega activa
         validarProductoAutorizado(producto, idBodega);
         if (!Boolean.TRUE.equals(producto.getActivo())) {
+            log.warn("Alta de conjunto rechazada por producto inactivo idProducto={}, bodegaId={}",
+                    producto.getIdProducto(), idBodega);
             throw new IllegalArgumentException("Solo se pueden crear conjuntos para productos activos.");
         }
         // Obtener el estado "Disponible" para el nuevo conjunto
@@ -112,7 +116,10 @@ public class ConjuntoService {
                 producto,
                 estadoDisponible);
 
-        return Mapper.toConjuntoDTO(conjuntoRepository.save(conjunto));
+        ConjuntoEntity guardado = conjuntoRepository.save(conjunto);
+        log.info("Conjunto creado idConjunto={}, idProducto={}, bodegaId={}",
+                guardado.getIdConjunto(), producto.getIdProducto(), idBodega);
+        return Mapper.toConjuntoDTO(guardado);
     }
 
     // Actualizar un conjunto existente
@@ -152,7 +159,14 @@ public class ConjuntoService {
         // Actualizar el conjunto con los datos proporcionados
         Mapper.actualizarConjunto(conjunto, datos, estadoNuevo);
 
-        return Mapper.toConjuntoDTO(conjuntoRepository.save(conjunto));
+        ConjuntoEntity guardado = conjuntoRepository.save(conjunto);
+        log.info("Conjunto actualizado idConjunto={}, estadoId={}, bodegaId={}",
+                guardado.getIdConjunto(), idEstadoNuevo, idBodega);
+        if (idEstadoActual != idEstadoNuevo) {
+            log.info("Estado administrativo de conjunto cambiado idConjunto={}, estadoAnteriorId={}, estadoNuevoId={}",
+                    guardado.getIdConjunto(), idEstadoActual, idEstadoNuevo);
+        }
+        return Mapper.toConjuntoDTO(guardado);
     }
     // Eliminar un conjunto existente
     @Transactional
@@ -167,10 +181,13 @@ public class ConjuntoService {
         validarProductoAutorizado(conjunto.getProducto(), idBodega);
         // Validar que el conjunto no tenga historial de movimientos antes de eliminarlo
         if (movimientoRepository.existsByConjunto_IdConjunto(idConjunto)) {
+            log.warn("Eliminación de conjunto rechazada por historial idConjunto={}, bodegaId={}",
+                    idConjunto, idBodega);
             throw new IllegalStateException(
                     "No se puede eliminar el conjunto porque tiene historial de movimientos.");
         }
         conjuntoRepository.delete(conjunto);
+        log.info("Conjunto eliminado idConjunto={}, bodegaId={}", idConjunto, idBodega);
     }
     // Obtener un estado de conjunto por su ID
     private EstadoConjuntoEntity obtenerEstado(int idEstado) {
@@ -185,6 +202,8 @@ public class ConjuntoService {
         }
         // Validar que el estado actual no sea "Surtido" o "Fuera de Servicio"
         if (estadoActual == ESTADO_SURTIDO || estadoActual == ESTADO_FUERA_DE_SERVICIO) {
+            log.warn("Transición administrativa de conjunto rechazada estadoActualId={}, estadoNuevoId={}",
+                    estadoActual, estadoNuevo);
             throw new IllegalArgumentException("El estado actual del conjunto no permite esa transición.");
         }
         // Validar que la transición de estado sea permitida según las reglas definidas
@@ -193,6 +212,8 @@ public class ConjuntoService {
                 || (estadoActual == ESTADO_MANTENIMIENTO
                 && (estadoNuevo == ESTADO_DISPONIBLE || estadoNuevo == ESTADO_FUERA_DE_SERVICIO));
         if (!permitida) {
+            log.warn("Transición administrativa de conjunto rechazada estadoActualId={}, estadoNuevoId={}",
+                    estadoActual, estadoNuevo);
             throw new IllegalArgumentException("La transición de estado no está permitida desde el CRUD.");
         }
     }

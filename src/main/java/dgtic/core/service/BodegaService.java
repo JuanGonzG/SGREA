@@ -8,6 +8,7 @@ import dgtic.core.repository.UsuarioBodegaRepository;
 import dgtic.core.mapping.Mapper;
 import dgtic.core.model.dto.BodegaDTO;
 import dgtic.core.model.entity.BodegaEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class BodegaService {
     @Autowired
     private BodegaRepository bodegaRepository;
@@ -77,12 +79,15 @@ public class BodegaService {
                 : bodegaRepository.existsByNombreIgnoreCaseAndIdBodegaNot(nombre, idBodega);
         // Lanzar una excepción si ya existe una bodega con el mismo nombre
         if (nombreDuplicado) {
+            log.warn("Alta o modificación de bodega rechazada por nombre duplicado nombre={}", nombre);
             throw new IllegalArgumentException("Ya existe una bodega con ese nombre.");
         }
         // Guardar la bodega en la base de datos
         bodegaDTO.setNombre(nombre);
         bodegaDTO.setDescripcion(bodegaDTO.getDescripcion().trim());
         BodegaEntity bodega = bodegaRepository.save(Mapper.toBodegaEntity(bodegaDTO));
+        log.info("Bodega {} idBodega={}, nombre={}",
+                idBodega == null ? "creada" : "actualizada", bodega.getIdBodega(), bodega.getNombre());
         return Mapper.toBodegaDTO(bodega);
     }
 
@@ -97,10 +102,12 @@ public class BodegaService {
                 || hojaProduccionRepository.existsByBodega_IdBodega(idBodega)
                 || usuarioBodegaRepository.existsByBodega_IdBodega(idBodega)
                 || sesionRepository.existsByBodega_IdBodega(idBodega)) {
+            log.warn("Eliminación de bodega rechazada por dependencias idBodega={}", idBodega);
             throw new IllegalStateException("No se puede eliminar la bodega porque tiene información relacionada.");
         }
         // Eliminar la bodega de la base de datos
         bodegaRepository.deleteById(idBodega);
+        log.info("Bodega eliminada idBodega={}", idBodega);
     }
 
 }

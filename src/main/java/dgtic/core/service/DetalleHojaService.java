@@ -9,12 +9,14 @@ import dgtic.core.model.entity.HojaProduccionEntity;
 import dgtic.core.model.entity.ProductoEntity;
 import dgtic.core.repository.DetalleHojaRepository;
 import dgtic.core.repository.MovimientoRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class DetalleHojaService {
     @Autowired
     private DetalleHojaRepository detalleHojaRepository;
@@ -57,6 +59,11 @@ public class DetalleHojaService {
         DetalleHojaEntity detalleHojaEntity = Mapper.toDetalleHojaEntity(detalleHojaDTO);
         // Guardar la entidad en la base de datos
         DetalleHojaEntity detalleGuardado = detalleHojaRepository.save(detalleHojaEntity);
+        log.info("Detalle de Hoja {} idDetalle={}, idHoja={}, idProducto={}",
+                detalleHojaDTO.getIdDetalleHoja() == null ? "creado" : "actualizado",
+                detalleGuardado.getIdDetalle(),
+                detalleGuardado.getHojaProduccionEntity().getIdHoja(),
+                detalleGuardado.getProducto().getIdProducto());
         return Mapper.toDetalleHojaDTO(detalleGuardado);
     }
 
@@ -66,12 +73,15 @@ public class DetalleHojaService {
         if (detalleHojaRepository.existsById(idDetalleHoja)) {
             // Verificar si el detalle tiene movimientos asociados
             if (movimientoRepository.existsByDetalleHoja_IdDetalle(idDetalleHoja)) {
+                log.warn("Eliminación de detalle rechazada por historial idDetalle={}", idDetalleHoja);
                 throw new IllegalStateException(
                         "No se puede eliminar el detalle porque tiene historial de movimientos.");
             }
             detalleHojaRepository.deleteById(idDetalleHoja);
+            log.info("Detalle de Hoja eliminado idDetalle={}", idDetalleHoja);
             return true;
         }
+        log.warn("Eliminación de detalle rechazada: detalle inexistente idDetalle={}", idDetalleHoja);
         return false;
     }
 }

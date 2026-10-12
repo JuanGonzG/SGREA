@@ -10,6 +10,7 @@ import dgtic.core.model.entity.EstadoContenedorEntity;
 import dgtic.core.repository.ContenedorRepository;
 import dgtic.core.repository.EstadoContenedorRepository;
 import dgtic.core.repository.HojaContenedorRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ContenedorService {
     // Definición de constantes para los estados de contenedor y formato de código
     private static final int ESTADO_DISPONIBLE = 1;
@@ -87,7 +89,10 @@ public class ContenedorService {
                 codigo,
                 LocalDateTime.now(),
                 estadoDisponible);
-        return Mapper.toContenedorDTO(contenedorRepository.save(contenedor));
+        ContenedorEntity guardado = contenedorRepository.save(contenedor);
+        log.info("Contenedor creado idContenedor={}, codigo={}",
+                guardado.getIdContenedor(), guardado.getCodigo());
+        return Mapper.toContenedorDTO(guardado);
     }
     // Actualizar un contenedor existente
     @Transactional
@@ -108,6 +113,8 @@ public class ContenedorService {
         // Verificar si el contenedor está en uso y lanzar una excepción si es así
         int idEstadoActual = estadoActual.getIdEstadoContenedor();
         if (idEstadoActual == ESTADO_EN_USO) {
+            log.warn("Modificación de contenedor rechazada porque está en uso idContenedor={}, codigo={}",
+                    idContenedor, contenedor.getCodigo());
             throw new IllegalArgumentException("El contenedor en uso no puede modificarse desde el CRUD.");
         }
         // Determinar el nuevo estado del contenedor, si no se proporciona, se mantiene el estado actual
@@ -129,7 +136,14 @@ public class ContenedorService {
 
         // Actualizar el contenedor con los datos proporcionados
         Mapper.actualizarContenedor(contenedor, datos, estadoNuevo);
-        return Mapper.toContenedorDTO(contenedorRepository.save(contenedor));
+        ContenedorEntity guardado = contenedorRepository.save(contenedor);
+        log.info("Contenedor actualizado idContenedor={}, codigo={}, estadoId={}",
+                guardado.getIdContenedor(), guardado.getCodigo(), idEstadoNuevo);
+        if (idEstadoActual != idEstadoNuevo) {
+            log.info("Estado administrativo de contenedor cambiado idContenedor={}, estadoAnteriorId={}, estadoNuevoId={}",
+                    guardado.getIdContenedor(), idEstadoActual, idEstadoNuevo);
+        }
+        return Mapper.toContenedorDTO(guardado);
     }
     // Eliminar un contenedor existente
     @Transactional
@@ -141,10 +155,13 @@ public class ContenedorService {
                 .orElseThrow(() -> new IllegalArgumentException("El contenedor no existe."));
         // Verificar si el contenedor tiene historial o asignaciones, lanzar una excepción si es así
         if (hojaContenedorRepository.existsByContenedor_IdContenedor(idContenedor)) {
+            log.warn("Eliminación de contenedor rechazada por historial idContenedor={}, codigo={}",
+                    idContenedor, contenedor.getCodigo());
             throw new IllegalStateException(
                     "No se puede eliminar el contenedor porque tiene historial o asignaciones.");
         }
         contenedorRepository.delete(contenedor);
+        log.info("Contenedor eliminado idContenedor={}, codigo={}", idContenedor, contenedor.getCodigo());
     }
     // Método para obtener el estado inicial del contenedor (Disponible) desde el repositorio
     private EstadoContenedorEntity obtenerEstadoInicial() {
@@ -173,6 +190,8 @@ public class ContenedorService {
         }
         // Si el estado actual es En Uso o Fuera de Servicio, no se permite la transición desde el CRUD
         if (estadoActual == ESTADO_EN_USO || estadoActual == ESTADO_FUERA_DE_SERVICIO) {
+            log.warn("Transición administrativa de contenedor rechazada estadoActualId={}, estadoNuevoId={}",
+                    estadoActual, estadoNuevo);
             throw new IllegalArgumentException("El estado actual no permite esa transición desde el CRUD.");
         }
         // Verificar si la transición de estado está permitida
@@ -182,6 +201,8 @@ public class ContenedorService {
                 && (estadoNuevo == ESTADO_DISPONIBLE || estadoNuevo == ESTADO_FUERA_DE_SERVICIO));
 
         if (!permitida) {
+            log.warn("Transición administrativa de contenedor rechazada estadoActualId={}, estadoNuevoId={}",
+                    estadoActual, estadoNuevo);
             throw new IllegalArgumentException("La transición de estado no está permitida desde el CRUD.");
         }
     }

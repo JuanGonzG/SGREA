@@ -21,6 +21,7 @@ import dgtic.core.repository.MovimientoRepository;
 import dgtic.core.repository.TipoMovimientoRepository;
 import dgtic.core.repository.UsuarioBodegaRepository;
 import dgtic.core.repository.UsuarioRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 public class MovimientoService {
     private static final int TIPO_SALIDA = 1;
     private static final int TIPO_ENTRADA = 2;
@@ -107,11 +109,15 @@ public class MovimientoService {
         long ocupacion = movimientoRepository.countByHojaContenedor_IdHojaContenedorAndTipoMovimiento_IdTipoMovimiento(
                 hojaContenedor.getIdHojaContenedor(), TIPO_SALIDA);
         if (ocupacion >= hojaContenedor.getContenedor().getCapacidad()) {
+            log.warn("SALIDA rechazada por capacidad agotada idHoja={}, idHojaContenedor={}, idUsuario={}",
+                    hoja.getIdHoja(), hojaContenedor.getIdHojaContenedor(), idUsuario);
             throw new IllegalArgumentException("La capacidad del contenedor ya fue alcanzada.");
         }
         // Validar que el conjunto no tenga una salida pendiente para esta hoja
         if (movimientoRepository.existsSalidaPendiente(
                 hoja.getIdHoja(), conjunto.getIdConjunto(), TIPO_SALIDA, TIPO_ENTRADA)) {
+            log.warn("SALIDA duplicada rechazada idHoja={}, idConjunto={}, idUsuario={}",
+                    hoja.getIdHoja(), conjunto.getIdConjunto(), idUsuario);
             throw new IllegalArgumentException("El conjunto ya tiene una salida pendiente para esta hoja.");
         }
         // Validar que la cantidad solicitada no haya sido surtida
@@ -132,7 +138,11 @@ public class MovimientoService {
         // Guardar los cambios en el detalle y el conjunto
         detalleHojaRepository.save(detalle);
         conjuntoRepository.save(conjunto);
-        return Mapper.toMovimientoDTO(movimientoRepository.save(movimiento));
+        MovimientoEntity guardado = movimientoRepository.save(movimiento);
+        log.info("SALIDA registrada idMovimiento={}, idHoja={}, idConjunto={}, idProducto={}, idHojaContenedor={}, idUsuario={}",
+                guardado.getIdMovimiento(), hoja.getIdHoja(), conjunto.getIdConjunto(),
+                conjunto.getProducto().getIdProducto(), hojaContenedor.getIdHojaContenedor(), idUsuario);
+        return Mapper.toMovimientoDTO(guardado);
     }
     // Registrar una entrada de conjunto
     @Transactional
@@ -158,6 +168,8 @@ public class MovimientoService {
         // Validar que el conjunto tenga una salida pendiente para esta hoja
         if (!movimientoRepository.existsSalidaPendiente(
                 hoja.getIdHoja(), conjunto.getIdConjunto(), TIPO_SALIDA, TIPO_ENTRADA)) {
+            log.warn("ENTRADA rechazada sin SALIDA pendiente idHoja={}, idConjunto={}, idUsuario={}",
+                    hoja.getIdHoja(), conjunto.getIdConjunto(), idUsuario);
             throw new IllegalArgumentException("El conjunto no tiene una salida pendiente para esta hoja.");
         }
         // Obtener el detalle de hoja correspondiente al producto del conjunto
@@ -197,7 +209,11 @@ public class MovimientoService {
         // Guardar los cambios en el detalle y el conjunto
         detalleHojaRepository.save(detalle);
         conjuntoRepository.save(conjunto);
-        return Mapper.toMovimientoDTO(movimientoRepository.save(movimiento));
+        MovimientoEntity guardado = movimientoRepository.save(movimiento);
+        log.info("ENTRADA registrada idMovimiento={}, idHoja={}, idConjunto={}, idHojaContenedorRetorno={}, idUsuario={}",
+                guardado.getIdMovimiento(), hoja.getIdHoja(), conjunto.getIdConjunto(),
+                hojaContenedor == null ? null : hojaContenedor.getIdHojaContenedor(), idUsuario);
+        return Mapper.toMovimientoDTO(guardado);
     }
     // Obtener todos los movimientos de una hoja de producción
     @Transactional(readOnly = true)

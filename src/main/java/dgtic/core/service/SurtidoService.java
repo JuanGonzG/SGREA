@@ -25,6 +25,7 @@ import dgtic.core.repository.EstadoHojaRepository;
 import dgtic.core.repository.HojaContenedorRepository;
 import dgtic.core.repository.HojaProduccionRepository;
 import dgtic.core.repository.MovimientoRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Service
+@Slf4j
 public class SurtidoService {
     private static final int TIPO_SALIDA = 1;
     private static final int ESTADO_CONTENEDOR_EN_USO = 2;
@@ -128,6 +130,8 @@ public class SurtidoService {
                 .findByHojaProduccion_IdHojaAndFechaCierreCargaIsNullAndFechaLiberacionIsNull(
                         hoja.getIdHoja())
                 .isPresent()) {
+            log.warn("Asignación de contenedor rechazada: la Hoja ya tiene contenedor activo idHoja={}, usuarioId={}, bodegaId={}",
+                    idHoja, idUsuario, idBodega);
             throw new IllegalArgumentException("La hoja ya tiene un contenedor activo.");
         }
         // Normalizar el código del contenedor
@@ -229,6 +233,8 @@ public class SurtidoService {
                         asignacion.getIdHojaContenedor(), TIPO_SALIDA);
         // Si no hay salidas registradas, lanzar una excepción
         if (salidas == 0) {
+            log.warn("Cierre de carga rechazado porque está vacía idHoja={}, idHojaContenedor={}, usuarioId={}",
+                    idHoja, idHojaContenedor, idUsuario);
             throw new IllegalArgumentException("No se puede cerrar una carga vacía.");
         }
         // Cerrar la carga del contenedor de la hoja de producción
@@ -359,8 +365,12 @@ public class SurtidoService {
         EstadoHojaEntity estado = estadoHojaRepository.findById(idEstado)
                 .orElseThrow(() -> new IllegalStateException(mensajeError));
         // Cambiar el estado de la hoja de producción y guardar los cambios en el repositorio
+        Integer estadoAnteriorId = hoja.getEstadoHoja() == null
+                ? null : hoja.getEstadoHoja().getIdEstadoHoja();
         hoja.setEstadoHoja(estado);
         hojaProduccionRepository.save(hoja);
+        log.info("Estado de Hoja cambiado durante Surtido idHoja={}, estadoAnteriorId={}, estadoNuevoId={}",
+                hoja.getIdHoja(), estadoAnteriorId, idEstado);
     }
     // Validar y obtener una hoja-contenedor asociada a una hoja de producción específica
     private HojaContenedorEntity obtenerHojaContenedorDeHoja(Integer idHojaContenedor, HojaProduccionEntity hoja) {

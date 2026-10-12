@@ -14,6 +14,7 @@ import dgtic.core.repository.HojaContenedorRepository;
 import dgtic.core.repository.HojaProduccionRepository;
 import dgtic.core.repository.UsuarioBodegaRepository;
 import dgtic.core.repository.UsuarioRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 public class HojaContenedorService {
     private static final int ESTADO_DISPONIBLE = 1;
     private static final int ESTADO_EN_USO = 2;
@@ -96,6 +98,8 @@ public class HojaContenedorService {
                 "El contenedor no está disponible para asignación.");
         // Verificar si el contenedor ya tiene una asignación activa
         if (hojaContenedorRepository.findActiveByContenedorForUpdate(dto.getIdContenedor()).isPresent()) {
+            log.warn("Asignación de contenedor rechazada por utilización activa idContenedor={}, idHoja={}, bodegaId={}",
+                    dto.getIdContenedor(), dto.getIdHoja(), idBodega);
             throw new IllegalArgumentException("El contenedor ya tiene una asignación activa.");
         }
         // Crear la entidad HojaContenedorEntity a partir del DTO, hoja, contenedor y usuario
@@ -106,7 +110,10 @@ public class HojaContenedorService {
         // Guardar el contenedor actualizado y la asignación en la base de datos
         contenedorRepository.save(contenedor);
         // Guardar la asignación y devolver el DTO correspondiente
-        return Mapper.toHojaContenedorDTO(hojaContenedorRepository.save(asignacion));
+        HojaContenedorEntity guardada = hojaContenedorRepository.save(asignacion);
+        log.info("Contenedor asignado idHojaContenedor={}, idHoja={}, idContenedor={}, usuarioId={}, bodegaId={}",
+                guardada.getIdHojaContenedor(), dto.getIdHoja(), dto.getIdContenedor(), idUsuario, idBodega);
+        return Mapper.toHojaContenedorDTO(guardada);
     }
 
     // Reutilizar una utilización activa de recepción o crear una nueva para la hoja
@@ -149,16 +156,24 @@ public class HojaContenedorService {
         HojaContenedorEntity asignacion = obtenerBloqueada(idHojaContenedor, idBodega);
         // Validar que la asignación no haya sido liberada y que la carga no esté cerrada
         if (asignacion.getFechaLiberacion() != null) {
+            log.warn("Cierre de carga rechazado porque la asignación ya fue liberada idHojaContenedor={}, hojaId={}",
+                    idHojaContenedor, asignacion.getHojaProduccion().getIdHoja());
             throw new IllegalArgumentException("La asignación ya fue liberada.");
         }
         if (asignacion.getFechaCierreCarga() != null) {
+            log.warn("Cierre de carga rechazado porque ya estaba cerrada idHojaContenedor={}, hojaId={}",
+                    idHojaContenedor, asignacion.getHojaProduccion().getIdHoja());
             throw new IllegalArgumentException("La carga ya está cerrada.");
         }
         // Establecer la fecha de cierre de carga y el usuario que realizó el cierre
         asignacion.setFechaCierreCarga(LocalDateTime.now());
         asignacion.setUsuarioCierre(usuario);
         // Guardar la asignación actualizada y devolver el DTO correspondiente
-        return Mapper.toHojaContenedorDTO(hojaContenedorRepository.save(asignacion));
+        HojaContenedorEntity cerrada = hojaContenedorRepository.save(asignacion);
+        log.info("Carga de contenedor cerrada idHojaContenedor={}, idHoja={}, idContenedor={}, usuarioId={}, bodegaId={}",
+                cerrada.getIdHojaContenedor(), cerrada.getHojaProduccion().getIdHoja(),
+                cerrada.getContenedor().getIdContenedor(), idUsuario, idBodega);
+        return Mapper.toHojaContenedorDTO(cerrada);
     }
     // Liberar un contenedor asignado a una hoja de producción
     @Transactional
@@ -169,9 +184,13 @@ public class HojaContenedorService {
         HojaContenedorEntity asignacion = obtenerBloqueada(idHojaContenedor, idBodega);
         // Validar que la asignación no haya sido liberada y que la carga esté cerrada
         if (asignacion.getFechaLiberacion() != null) {
+            log.warn("Liberación de contenedor rechazada porque ya fue liberado idHojaContenedor={}, hojaId={}",
+                    idHojaContenedor, asignacion.getHojaProduccion().getIdHoja());
             throw new IllegalArgumentException("La asignación ya fue liberada.");
         }
         if (asignacion.getFechaCierreCarga() == null) {
+            log.warn("Liberación de contenedor rechazada porque la carga sigue abierta idHojaContenedor={}, hojaId={}",
+                    idHojaContenedor, asignacion.getHojaProduccion().getIdHoja());
             throw new IllegalArgumentException("La carga debe cerrarse antes de liberar el contenedor.");
         }
         // Obtener el contenedor asociado a la asignación y validar que esté en uso
@@ -188,7 +207,11 @@ public class HojaContenedorService {
         contenedor.setEstadoContenedor(obtenerEstadoContenedor(ESTADO_DISPONIBLE));
         contenedorRepository.save(contenedor);
         // Guardar la asignación actualizada y devolver el DTO correspondiente
-        return Mapper.toHojaContenedorDTO(hojaContenedorRepository.save(asignacion));
+        HojaContenedorEntity liberada = hojaContenedorRepository.save(asignacion);
+        log.info("Contenedor liberado idHojaContenedor={}, idHoja={}, idContenedor={}, usuarioId={}, bodegaId={}",
+                liberada.getIdHojaContenedor(), liberada.getHojaProduccion().getIdHoja(),
+                liberada.getContenedor().getIdContenedor(), idUsuario, idBodega);
+        return Mapper.toHojaContenedorDTO(liberada);
     }
 
     // Método para obtener una asignación de contenedor bloqueada para actualización

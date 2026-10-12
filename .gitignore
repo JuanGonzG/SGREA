@@ -34,3 +34,7 @@ build/
 AGENTS.md
 docs/especificacion-entidades.md
 docs/esquema-actual.sql
+
+### SGREA logging artifacts ###
+logs/
+*.log

@@ -19,6 +19,7 @@ import dgtic.core.repository.UsuarioBodegaRepository;
 import dgtic.core.repository.UsuarioRepository;
 import dgtic.core.repository.HojaContenedorRepository;
 import dgtic.core.repository.MovimientoRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -97,6 +99,7 @@ public class UsuarioService {
         }
         // Validar que la lista de IDs de bodegas no sea nula ni vacía
         if (idsBodegas == null || idsBodegas.isEmpty()) {
+            log.warn("Actualización de asociaciones rechazada: usuario sin bodega idUsuario={}", idUsuario);
             throw new IllegalStateException("El usuario debe conservar al menos una bodega.");
         }
         // Obtener las entidades de bodegas correspondientes a los IDs proporcionados
@@ -123,6 +126,8 @@ public class UsuarioService {
                         .usuario(usuarioRepository.getReferenceById(idUsuario))
                         .bodega(bodega)
                         .build()));
+        log.info("Asociaciones Usuario-Bodega actualizadas idUsuario={}, totalBodegas={}",
+                idUsuario, nuevas.size());
     }
 
     // Crear un nuevo usuario con validaciones y asociaciones a bodegas
@@ -145,6 +150,8 @@ public class UsuarioService {
         usuario = usuarioRepository.save(usuario);
         // Guardar las asociaciones entre el usuario y las bodegas
         guardarAsociaciones(usuario, bodegas);
+        log.info("Usuario creado idUsuario={}, username={}, rolId={}, totalBodegas={}",
+                usuario.getIdUsuario(), usuario.getUsername(), rol.getIdRol(), bodegas.size());
         return toUsuarioConBodegas(usuario);
     }
 
@@ -158,6 +165,7 @@ public class UsuarioService {
             throw new IllegalArgumentException("Ya existe un usuario con ese username.");
         }
         // Asignar los nuevos valores al usuario y guardar los cambios
+        Boolean activoAnterior = usuario.getActivo();
         usuario.setNombre(dto.getNombre().trim());
         usuario.setUsername(dto.getUsername().trim());
         usuario.setActivo(dto.getActivo());
@@ -166,7 +174,17 @@ public class UsuarioService {
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-        return toUsuarioConBodegas(usuarioRepository.save(usuario));
+        // Guardar los cambios del usuario
+        UsuarioEntity guardado = usuarioRepository.save(usuario);
+        log.info("Usuario actualizado idUsuario={}, username={}, rolId={}",
+                guardado.getIdUsuario(), guardado.getUsername(), guardado.getRol().getIdRol());
+        // Validar las bodegas y obtener las entidades correspondientes
+        if (!Objects.equals(activoAnterior, guardado.getActivo())) {
+            log.info("Usuario {} idUsuario={}, username={}",
+                    Boolean.TRUE.equals(guardado.getActivo()) ? "activado" : "desactivado",
+                    guardado.getIdUsuario(), guardado.getUsername());
+        }
+        return toUsuarioConBodegas(guardado);
     }
 
     // Eliminar un usuario si no tiene sesiones históricas asociadas
@@ -177,6 +195,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("El usuario no existe."));
         // Verificar si el usuario tiene sesiones históricas antes de eliminarlo
         if (sesionRepository.existsByUsuario_IdUsuario(idUsuario)) {
+            log.warn("Eliminación de usuario rechazada por sesiones históricas idUsuario={}", idUsuario);
             throw new IllegalStateException("No se puede eliminar el usuario porque tiene sesiones históricas.");
         }
         // Verificar si el usuario tiene movimientos o referencias operativas antes de eliminarlo
@@ -184,12 +203,14 @@ public class UsuarioService {
                 || hojaContenedorRepository.existsByUsuarioAsignacion_IdUsuario(idUsuario)
                 || hojaContenedorRepository.existsByUsuarioCierre_IdUsuario(idUsuario)
                 || hojaContenedorRepository.existsByUsuarioLiberacion_IdUsuario(idUsuario)) {
+            log.warn("Eliminación de usuario rechazada por historial o referencias operativas idUsuario={}", idUsuario);
             throw new IllegalStateException(
                     "No se puede eliminar el usuario porque tiene historial o referencias operativas.");
         }
         // Eliminar las asociaciones entre el usuario y las bodegas, y luego eliminar el usuario
         usuarioBodegaRepository.deleteByUsuario_IdUsuario(idUsuario);
         usuarioRepository.delete(usuario);
+        log.info("Usuario eliminado idUsuario={}, username={}", idUsuario, usuario.getUsername());
     }
 
     // Obtener las bodegas asociadas a un usuario

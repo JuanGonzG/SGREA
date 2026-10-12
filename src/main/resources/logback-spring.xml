@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="LOG_FILE" value="logs/sgrea.log"/>
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/sgrea-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="dgtic.core" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLING_FILE"/>
+    </root>
+
+</configuration>
