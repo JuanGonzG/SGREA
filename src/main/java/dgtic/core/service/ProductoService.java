@@ -3,6 +3,8 @@ package dgtic.core.service;
 import dgtic.core.mapping.Mapper;
 import dgtic.core.model.dto.BodegaDTO;
 import dgtic.core.model.dto.ProductoDTO;
+import dgtic.core.model.entity.ProductoEntity;
+import lombok.extern.slf4j.Slf4j;
 import dgtic.core.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ProductoService {
     @Autowired
     private ProductoRepository productoRepository;
@@ -37,14 +40,32 @@ public class ProductoService {
     }
     // Agregar un nuevo producto
     public ProductoDTO addProducto(ProductoDTO productoDTO) {
-        return Mapper.toProductoDTO(productoRepository.save(Mapper.toProductoEntity(productoDTO)));
+        // Verificar si el producto ya existe
+        ProductoEntity existente = productoDTO.getIdProducto() == null
+                ? null
+                : productoRepository.findById(productoDTO.getIdProducto()).orElse(null);
+        // Guardar el producto (creando uno nuevo o actualizando uno existente)
+        ProductoEntity guardado = productoRepository.save(Mapper.toProductoEntity(productoDTO));
+        log.info("Producto {} idProducto={}, bodegaId={}",
+                existente == null ? "creado" : "actualizado",
+                guardado.getIdProducto(),
+                guardado.getBodega() == null ? null : guardado.getBodega().getIdBodega());
+        // Registrar cambios en el estado activo del producto
+        if (existente != null && !java.util.Objects.equals(existente.getActivo(), guardado.getActivo())) {
+            log.info("Producto {} idProducto={}, activo={}",
+                    Boolean.TRUE.equals(guardado.getActivo()) ? "activado" : "desactivado",
+                    guardado.getIdProducto(), guardado.getActivo());
+        }
+        return Mapper.toProductoDTO(guardado);
     }
     // Eliminar un producto por su ID
     public Boolean deleteProductoById(Integer idProducto) {
         if (productoRepository.existsById(idProducto)) {
             productoRepository.deleteById(idProducto);
+            log.info("Producto eliminado idProducto={}", idProducto);
             return true;
         }
+        log.warn("Eliminación de producto rechazada: producto inexistente idProducto={}", idProducto);
         return false;
     }
 }

@@ -26,6 +26,7 @@ import dgtic.core.model.dto.reporte.ReporteHojaDTO;
 import dgtic.core.model.dto.reporte.ReporteMovimientoDTO;
 import dgtic.core.model.dto.reporte.ReporteOperacionDetalleDTO;
 import dgtic.core.model.dto.reporte.ReporteOperacionHojaDTO;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Infraestructura común para la generación de reportes XLSX.
@@ -34,6 +35,7 @@ import dgtic.core.model.dto.reporte.ReporteOperacionHojaDTO;
  * clase sólo transforma DTOs autorizados y metadata en celdas Excel.
  */
 @Service
+@Slf4j
 public class ReporteExcelService {
     // Fila de encabezado de tabla, después de metadata y título
     private static final int FILA_ENCABEZADO = 7;
@@ -44,7 +46,7 @@ public class ReporteExcelService {
     // Generación de reportes
     public byte[] generarHojas(List<ReporteHojaDTO> reportes, Metadata metadata) {
         // Genera un archivo Excel con una hoja de "Hojas de Producción" y los datos de reportes
-        return generarArchivo((workbook, estilos) -> {
+        byte[] archivo = generarArchivo((workbook, estilos) -> {
             // Crear hoja de "Hojas de Producción"
             Sheet sheet = workbook.createSheet("Hojas de Producción");
             // Escribir metadata en las primeras filas
@@ -79,11 +81,14 @@ public class ReporteExcelService {
             // Ajustar el ancho de las columnas automáticamente
             ajustarColumnas(sheet, 11);
         });
+        log.info("Reporte Excel generado tipoReporte=hojas bodega={} usuario={}",
+                metadata.bodega(), metadata.usuario());
+        return archivo;
     }
     // Generación de reportes de movimientos
     public byte[] generarMovimientos(List<ReporteMovimientoDTO> reportes, Metadata metadata) {
         // Genera un archivo Excel con una hoja de "Movimientos" y los datos de reportes
-        return generarArchivo((workbook, estilos) -> {
+        byte[] archivo = generarArchivo((workbook, estilos) -> {
             // Crear hoja de "Movimientos"
             Sheet sheet = workbook.createSheet("Movimientos");
             // Escribir metadata en las primeras filas
@@ -118,11 +123,14 @@ public class ReporteExcelService {
             // Ajustar el ancho de las columnas automáticamente
             ajustarColumnas(sheet, 9);
         });
+        log.info("Reporte Excel generado tipoReporte=movimientos bodega={} usuario={}",
+                metadata.bodega(), metadata.usuario());
+        return archivo;
     }
     // Generación de reportes de contenedores
     public byte[] generarContenedores(List<ReporteContenedorDTO> reportes, Metadata metadata) {
         // Genera un archivo Excel con una hoja de "Utilización de Contenedores" y los datos de reportes
-        return generarArchivo((workbook, estilos) -> {
+        byte[] archivo = generarArchivo((workbook, estilos) -> {
             // Crear hoja de "Utilización de Contenedores"
             Sheet sheet = workbook.createSheet("Utilización de Contenedores");
             // Escribir metadata en las primeras filas
@@ -160,11 +168,14 @@ public class ReporteExcelService {
             // Ajustar el ancho de las columnas automáticamente
             ajustarColumnas(sheet, 12);
         });
+        log.info("Reporte Excel generado tipoReporte=contenedores bodega={} usuario={}",
+                metadata.bodega(), metadata.usuario());
+        return archivo;
     }
     // Generación de reportes de inventario
     public byte[] generarInventario(List<ReporteConjuntoDTO> reportes, Metadata metadata) {
         // Genera un archivo Excel con una hoja de "Inventario de Conjuntos" y los datos de reportes
-        return generarArchivo((workbook, estilos) -> {
+        byte[] archivo = generarArchivo((workbook, estilos) -> {
             // Crear hoja de "Inventario de Conjuntos"
             Sheet sheet = workbook.createSheet("Inventario de Conjuntos");
             // Escribir metadata en las primeras filas
@@ -193,16 +204,25 @@ public class ReporteExcelService {
             // Ajustar el ancho de las columnas automáticamente
             ajustarColumnas(sheet, 5);
         });
+        log.info("Reporte Excel generado tipoReporte=inventario bodega={} usuario={}",
+                metadata.bodega(), metadata.usuario());
+        return archivo;
     }
     // Generación de reportes de operaciones
     public byte[] generarSurtido(ReporteOperacionHojaDTO reporte, Metadata metadata) {
         // Genera un archivo Excel con una hoja de "Surtido" y los datos de reporte
-        return generarOperacion(reporte, metadata, true);
+        byte[] archivo = generarOperacion(reporte, metadata, true);
+        log.info("Reporte Excel generado tipoReporte=surtido idHoja={} bodega={} usuario={}",
+                reporte.getIdHoja(), metadata.bodega(), metadata.usuario());
+        return archivo;
     }
     // Generación de reportes de operaciones
     public byte[] generarRecepcion(ReporteOperacionHojaDTO reporte, Metadata metadata) {
         // Genera un archivo Excel con una hoja de "Recepción" y los datos de reporte
-        return generarOperacion(reporte, metadata, false);
+        byte[] archivo = generarOperacion(reporte, metadata, false);
+        log.info("Reporte Excel generado tipoReporte=recepcion idHoja={} bodega={} usuario={}",
+                reporte.getIdHoja(), metadata.bodega(), metadata.usuario());
+        return archivo;
     }
     // Creación de estilos de celdas
     public Estilos crearEstilos(Workbook workbook) {

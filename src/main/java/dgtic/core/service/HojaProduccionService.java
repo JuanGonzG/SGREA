@@ -10,6 +10,7 @@ import dgtic.core.repository.EstadoHojaRepository;
 import dgtic.core.repository.HojaProduccionRepository;
 import dgtic.core.repository.HojaContenedorRepository;
 import dgtic.core.repository.MovimientoRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 public class HojaProduccionService {
     @Autowired
     private HojaProduccionRepository hojaProduccionRepository;
@@ -48,7 +50,13 @@ public class HojaProduccionService {
 
     // Guardar o actualizar una hoja de producción
     public HojaProduccionDTO addHojaProduccion(HojaProduccionDTO hojaProduccionDTO) {
-        return Mapper.toHojaProduccionDTO(hojaProduccionRepository.save(Mapper.toHojaProduccionEntity(hojaProduccionDTO)));
+        HojaProduccionEntity guardada = hojaProduccionRepository.save(
+                Mapper.toHojaProduccionEntity(hojaProduccionDTO));
+        log.info("Hoja de producción {} idHoja={}, bodegaId={}",
+                hojaProduccionDTO.getIdHoja() == null ? "creada" : "actualizada",
+                guardada.getIdHoja(),
+                guardada.getBodega() == null ? null : guardada.getBodega().getIdBodega());
+        return Mapper.toHojaProduccionDTO(guardada);
     }
     // Bloquear una hoja de producción
     @Transactional
@@ -73,6 +81,8 @@ public class HojaProduccionService {
                 .orElseThrow(() -> new IllegalStateException("No existe el estado de hoja Por surtir."));
         hoja.setEstadoHoja(estadoPorSurtir);
         hojaProduccionRepository.save(hoja);
+        log.info("Estado de Hoja cambiado idHoja={}, estadoAnteriorId=1, estadoNuevoId=2, bodegaId={}",
+                idHoja, idBodega);
     }
     // Obtener un estado de hoja por su ID
     public EstadoHojaDTO getEstadoHojaById(Integer idEstadoHoja) {
@@ -89,8 +99,10 @@ public class HojaProduccionService {
             validarSinDependenciasHistoricas(idHoja);
             // Eliminar la hoja de producción
             hojaProduccionRepository.deleteById(idHoja);
+            log.info("Hoja de producción eliminada idHoja={}", idHoja);
             return true;
         }
+        log.warn("Eliminación de Hoja rechazada: Hoja inexistente idHoja={}", idHoja);
         return false;
     }
 
@@ -103,12 +115,14 @@ public class HojaProduccionService {
         detalleHojaRepository.deleteByHojaProduccionEntity_IdHoja(idHoja);
         // Eliminar la hoja de producción
         hojaProduccionRepository.deleteById(idHoja);
+        log.info("Hoja de producción y detalles eliminados idHoja={}", idHoja);
     }
 
     private void validarSinDependenciasHistoricas(Integer idHoja) {
         // Validar que no tenga movimientos o asignaciones de contenedor antes de eliminarla
         if (movimientoRepository.existsByHojaProduccion_IdHoja(idHoja)
                 || hojaContenedorRepository.existsByHojaProduccion_IdHoja(idHoja)) {
+            log.warn("Eliminación de Hoja rechazada por historial o utilizaciones idHoja={}", idHoja);
             throw new IllegalStateException(
                     "No se puede eliminar la hoja porque tiene movimientos o asignaciones de contenedor.");
         }

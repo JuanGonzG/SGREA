@@ -3,6 +3,7 @@ package dgtic.core.service;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import dgtic.core.model.dto.reporte.ReporteHojaDetalleDTO;
 import dgtic.core.model.dto.reporte.ReporteOperacionHojaDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -14,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class ReportePdfService {
     // Formato de fecha y hora para el reporte
     private static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern(
@@ -26,18 +28,27 @@ public class ReportePdfService {
     }
     // Genera un PDF de la hoja de producción a partir del reporte y los datos proporcionados
     public byte[] generarHoja(ReporteHojaDetalleDTO reporte, String nombreBodega, String nombreUsuario) {
-        return renderizar("reportes/pdf/hoja", reporte, nombreBodega, nombreUsuario,
+        byte[] archivo = renderizar("reportes/pdf/hoja", reporte, nombreBodega, nombreUsuario,
                 "SGREA - Hoja de producción " + reporte.getIdHoja());
+        log.info("Reporte PDF generado tipoReporte=hoja idHoja={} bodega={} usuario={}",
+                reporte.getIdHoja(), nombreBodega, nombreUsuario);
+        return archivo;
     }
     // Genera un PDF del surtido a partir del reporte y los datos proporcionados
     public byte[] generarSurtido(ReporteOperacionHojaDTO reporte, String nombreBodega, String nombreUsuario) {
-        return renderizar("reportes/pdf/surtido", reporte, nombreBodega, nombreUsuario,
+        byte[] archivo = renderizar("reportes/pdf/surtido", reporte, nombreBodega, nombreUsuario,
                 "SGREA - Surtido hoja " + reporte.getIdHoja());
+        log.info("Reporte PDF generado tipoReporte=surtido idHoja={} bodega={} usuario={}",
+                reporte.getIdHoja(), nombreBodega, nombreUsuario);
+        return archivo;
     }
     // Genera un PDF de la recepción a partir del reporte y los datos proporcionados
     public byte[] generarRecepcion(ReporteOperacionHojaDTO reporte, String nombreBodega, String nombreUsuario) {
-        return renderizar("reportes/pdf/recepcion", reporte, nombreBodega, nombreUsuario,
+        byte[] archivo = renderizar("reportes/pdf/recepcion", reporte, nombreBodega, nombreUsuario,
                 "SGREA - Recepción hoja " + reporte.getIdHoja());
+        log.info("Reporte PDF generado tipoReporte=recepcion idHoja={} bodega={} usuario={}",
+                reporte.getIdHoja(), nombreBodega, nombreUsuario);
+        return archivo;
     }
     // Método privado que renderiza el contenido HTML a PDF utilizando la plantilla Thymeleaf y los datos proporcionados
     private byte[] renderizar(String plantilla, Object reporte, String nombreBodega,

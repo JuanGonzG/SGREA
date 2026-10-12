@@ -25,6 +25,7 @@ import dgtic.core.repository.EstadoHojaRepository;
 import dgtic.core.repository.HojaContenedorRepository;
 import dgtic.core.repository.HojaProduccionRepository;
 import dgtic.core.repository.MovimientoRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Service
+@Slf4j
 public class RecepcionService {
     // Estados de hoja relevantes para la recepción
     private static final int ESTADO_EN_LLAMADO = 4;
@@ -306,8 +308,12 @@ public class RecepcionService {
         EstadoHojaEntity estado = estadoHojaRepository.findById(idEstado)
                 .orElseThrow(() -> new IllegalStateException("No existe el estado de hoja requerido."));
         // Cambiamos el estado de la hoja y guardamos los cambios en el repositorio
+        Integer estadoAnteriorId = hoja.getEstadoHoja() == null
+                ? null : hoja.getEstadoHoja().getIdEstadoHoja();
         hoja.setEstadoHoja(estado);
         hojaProduccionRepository.save(hoja);
+        log.info("Estado de Hoja cambiado durante Recepción idHoja={}, estadoAnteriorId={}, estadoNuevoId={}",
+                hoja.getIdHoja(), estadoAnteriorId, idEstado);
     }
     // Construye un resumen de la hoja de producción para la recepción
     private RecepcionResumenDTO construirResumenDeHoja(Integer idHoja) {

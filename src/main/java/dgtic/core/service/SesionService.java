@@ -9,6 +9,7 @@ import dgtic.core.repository.BodegaRepository;
 import dgtic.core.repository.SesionRepository;
 import dgtic.core.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class SesionService {
     @Autowired
     private SesionRepository sesionRepository;
@@ -39,6 +41,8 @@ public class SesionService {
                 sesionExpirada.setFechaFin(LocalDateTime.now());
 
                 sesionRepository.save(sesionExpirada);
+                log.info("Sesión previa cerrada usuarioId={}, username={}",
+                        idUsuario, sesionExpirada.getUsuario().getUsername());
             }
 
             // Buscar el usuario y la bodega
@@ -62,9 +66,12 @@ public class SesionService {
                     .build();
 
             nuevaSesion = sesionRepository.save(nuevaSesion);
+            log.info("Nueva sesión creada usuarioId={}, username={}, bodegaId={}",
+                    idUsuario, usuario.get().getUsername(), idBodega);
             return Mapper.toSesionDTO(nuevaSesion);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error inesperado al crear sesión usuarioId={}, bodegaId={}",
+                    idUsuario, idBodega, e);
             throw new RuntimeException("Error al crear la sesión");
         }
     }
@@ -84,10 +91,13 @@ public class SesionService {
             sesion.setActiva(false);
             sesion.setFechaFin(LocalDateTime.now());
             sesionRepository.save(sesion);
+            log.info("Sesión cerrada usuarioId={}, username={}",
+                    idUsuario, sesion.getUsuario().getUsername());
 
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error inesperado al cerrar sesión usuarioId={}, sesionId={}",
+                    idUsuario, idSesion, e);
             throw new RuntimeException("Error al cerrar la sesión");
         }
     }
