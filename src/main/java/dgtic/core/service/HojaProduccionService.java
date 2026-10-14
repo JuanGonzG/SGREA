@@ -1,8 +1,8 @@
 package dgtic.core.service;
 
 import dgtic.core.mapping.Mapper;
-import dgtic.core.model.dto.EstadoHojaDTO;
-import dgtic.core.model.dto.HojaProduccionDTO;
+import dgtic.core.model.dto.catalogo.EstadoHojaDTO;
+import dgtic.core.model.dto.operacion.HojaProduccionDTO;
 import dgtic.core.model.entity.EstadoHojaEntity;
 import dgtic.core.model.entity.HojaProduccionEntity;
 import dgtic.core.repository.DetalleHojaRepository;

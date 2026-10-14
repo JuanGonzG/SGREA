@@ -43,6 +43,7 @@
                 </div>
 
                 <form id="formHoja" class="needs-validation" method="post" autocomplete="off" th:action="@{/hojas-produccion}" novalidate>
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <div class="card-body">
                         <input type="hidden" id="idHoja" name="idHoja" th:value="${hojaProduccion != null ? hojaProduccion.idHoja : ''}">
                         <div class="row">

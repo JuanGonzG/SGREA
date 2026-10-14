@@ -1,10 +1,10 @@
 package dgtic.core.service;
 
 import dgtic.core.mapping.Mapper;
-import dgtic.core.model.dto.ConjuntoAltaDTO;
-import dgtic.core.model.dto.ConjuntoDTO;
-import dgtic.core.model.dto.ConjuntoEdicionDTO;
-import dgtic.core.model.dto.EstadoConjuntoDTO;
+import dgtic.core.model.dto.catalogo.ConjuntoAltaDTO;
+import dgtic.core.model.dto.catalogo.ConjuntoDTO;
+import dgtic.core.model.dto.catalogo.ConjuntoEdicionDTO;
+import dgtic.core.model.dto.catalogo.EstadoConjuntoDTO;
 import dgtic.core.model.entity.ConjuntoEntity;
 import dgtic.core.model.entity.EstadoConjuntoEntity;
 import dgtic.core.model.entity.ProductoEntity;

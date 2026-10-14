@@ -1,11 +1,11 @@
 package dgtic.core.controller;
 
-import dgtic.core.model.dto.RecepcionEntradaRequest;
-import dgtic.core.model.dto.RecepcionEntradaResponse;
-import dgtic.core.model.dto.RecepcionEstadoDTO;
-import dgtic.core.model.dto.RecepcionLiberarContenedorResponse;
-import dgtic.core.model.dto.RecepcionSeleccionarContenedorRequest;
-import dgtic.core.model.dto.RecepcionSeleccionarContenedorResponse;
+import dgtic.core.model.dto.hh.recepcion.RecepcionEntradaRequest;
+import dgtic.core.model.dto.hh.recepcion.RecepcionEntradaResponse;
+import dgtic.core.model.dto.hh.recepcion.RecepcionEstadoDTO;
+import dgtic.core.model.dto.hh.recepcion.RecepcionLiberarContenedorResponse;
+import dgtic.core.model.dto.hh.recepcion.RecepcionSeleccionarContenedorRequest;
+import dgtic.core.model.dto.hh.recepcion.RecepcionSeleccionarContenedorResponse;
 import dgtic.core.service.RecepcionService;
 import dgtic.core.service.SesionService;
 import jakarta.servlet.http.HttpSession;

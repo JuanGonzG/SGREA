@@ -1,6 +1,6 @@
 package dgtic.core.controller;
 
-import dgtic.core.model.dto.BodegaDTO;
+import dgtic.core.model.dto.catalogo.BodegaDTO;
 import dgtic.core.service.BodegaService;
 import dgtic.core.service.SesionService;
 import jakarta.servlet.http.HttpSession;

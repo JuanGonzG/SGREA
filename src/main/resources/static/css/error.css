@@ -1,0 +1,54 @@
+.error-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: #f4f6f9;
+}
+
+.error-card {
+    width: min(100%, 38rem);
+    border: 0;
+    border-top: .35rem solid #0B2545;
+    box-shadow: 0 .75rem 1.5rem rgba(11, 37, 69, .14);
+}
+
+.error-card .error-logo {
+    max-width: 12rem;
+    max-height: 4rem;
+    object-fit: contain;
+}
+
+.error-forbidden-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    z-index: 3000 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: #f4f6f9;
+}
+
+.error-forbidden-overlay .error-card {
+    width: min(100%, 38rem);
+}
+
+.error-code {
+    color: #0B2545;
+    font-size: clamp(3.5rem, 12vw, 6rem);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.error-icon {
+    color: #0B2545;
+    font-size: 2.5rem;
+}

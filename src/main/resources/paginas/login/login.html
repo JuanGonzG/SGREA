@@ -8,6 +8,8 @@
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
     <meta name="supported-color-schemes" content="light" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <link rel="preload" th:href="@{/css/adminlte.css}" as="style" />
     <!--Plugin(OverlayScrollbars)-->
     <link rel="stylesheet" th:href="@{/css/overlayscrollbars.min.css}"/>
@@ -16,6 +18,7 @@
     <!--Plugin(AdminLTE)-->
     <link rel="stylesheet" th:href="@{/css/adminlte.css}" />
     <title>SGREA | Iniciar Sesión</title>
+    <script th:src="@{/js/csrf.js}"></script>
     <!--Theme Init-->
     <script>
         const theme = 'light';
@@ -42,6 +45,7 @@
             <p th:if="${bodegas == null}" class="login-box-msg">Ingresa tus credenciales para iniciar sesión</p>
 
             <form method="post" autocomplete="off" th:action="${bodegas == null} ? @{login-bodega} : @{login-enter}" th:object="${usuario}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <label class="visually-hidden">Usuario</label>
                 <div class="input-group mb-3">
                     <input th:field="*{username}" autocomplete="off" th:disabled="${bodegas != null}" class="form-control" placeholder="Usuario" required/>
@@ -65,8 +69,6 @@
                 </div>
                 <div th:if="${bodegas != null}" name="segundoLogin">
                     <p class="login-box-msg">Selecciona una bodega para ingresar</p>
-                    <input type="hidden" th:field="*{username}" />
-                    <input type="hidden" th:field="*{idUsuario}" />
                     <div class="input-group mb-3">
                         <div class="input-group-text">
                             <span class="bi bi-house-gear-fill"></span>

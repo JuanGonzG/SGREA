@@ -1,9 +1,9 @@
 package dgtic.core.controller;
 
 import dgtic.core.service.SesionService;
-import dgtic.core.model.dto.UsuarioAltaDTO;
-import dgtic.core.model.dto.UsuarioDTO;
-import dgtic.core.model.dto.UsuarioEdicionDTO;
+import dgtic.core.model.dto.catalogo.UsuarioAltaDTO;
+import dgtic.core.model.dto.catalogo.UsuarioDTO;
+import dgtic.core.model.dto.catalogo.UsuarioEdicionDTO;
 import dgtic.core.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;

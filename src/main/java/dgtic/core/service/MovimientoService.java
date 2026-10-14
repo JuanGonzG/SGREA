@@ -1,9 +1,9 @@
 package dgtic.core.service;
 
 import dgtic.core.mapping.Mapper;
-import dgtic.core.model.dto.MovimientoDTO;
-import dgtic.core.model.dto.MovimientoEntradaDTO;
-import dgtic.core.model.dto.MovimientoSalidaDTO;
+import dgtic.core.model.dto.operacion.MovimientoDTO;
+import dgtic.core.model.dto.operacion.MovimientoEntradaDTO;
+import dgtic.core.model.dto.operacion.MovimientoSalidaDTO;
 import dgtic.core.model.entity.ConjuntoEntity;
 import dgtic.core.model.entity.DetalleHojaEntity;
 import dgtic.core.model.entity.EstadoConjuntoEntity;

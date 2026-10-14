@@ -1,7 +1,7 @@
 package dgtic.core.controller;
 
-import dgtic.core.model.dto.BodegaDTO;
-import dgtic.core.model.dto.ProductoDTO;
+import dgtic.core.model.dto.catalogo.BodegaDTO;
+import dgtic.core.model.dto.catalogo.ProductoDTO;
 import dgtic.core.service.ProductoService;
 import dgtic.core.service.SesionService;
 import dgtic.core.service.UsuarioService;

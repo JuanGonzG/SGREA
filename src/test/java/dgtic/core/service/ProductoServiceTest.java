@@ -1,6 +1,6 @@
 package dgtic.core.service;
 
-import dgtic.core.model.dto.ProductoDTO;
+import dgtic.core.model.dto.catalogo.ProductoDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

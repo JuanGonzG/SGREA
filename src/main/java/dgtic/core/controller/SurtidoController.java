@@ -1,11 +1,11 @@
 package dgtic.core.controller;
 
-import dgtic.core.model.dto.SurtidoAsignarContenedorRequest;
-import dgtic.core.model.dto.SurtidoAsignarContenedorResponse;
-import dgtic.core.model.dto.SurtidoCerrarCargaResponse;
-import dgtic.core.model.dto.SurtidoEstadoDTO;
-import dgtic.core.model.dto.SurtidoSalidaRequest;
-import dgtic.core.model.dto.SurtidoSalidaResponse;
+import dgtic.core.model.dto.hh.surtido.SurtidoAsignarContenedorRequest;
+import dgtic.core.model.dto.hh.surtido.SurtidoAsignarContenedorResponse;
+import dgtic.core.model.dto.hh.surtido.SurtidoCerrarCargaResponse;
+import dgtic.core.model.dto.hh.surtido.SurtidoEstadoDTO;
+import dgtic.core.model.dto.hh.surtido.SurtidoSalidaRequest;
+import dgtic.core.model.dto.hh.surtido.SurtidoSalidaResponse;
 import dgtic.core.service.SesionService;
 import dgtic.core.service.SurtidoService;
 import jakarta.servlet.http.HttpSession;
