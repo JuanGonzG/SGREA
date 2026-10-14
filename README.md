@@ -2,192 +2,188 @@
 
 Sistema de Gestión de Recursos y Almacenes (SGREA), desarrollado con Spring Boot, Thymeleaf, Spring Data JPA y MariaDB.
 
-SGREA representa la operación de una organización que presta o administra equipo técnico para proyectos, producciones y eventos. Los recursos se organizan por bodegas —por ejemplo, iluminación o audio— y cada salida hacia un proyecto debe conservar quién solicitó el material, qué unidades físicas se entregaron, en qué contenedor viajaron y cuándo regresaron.
+SGREA representa la operación de una organización que administra equipo técnico para proyectos, producciones y eventos.
+Los recursos se organizan por bodegas y cada salida conserva qué unidades físicas fueron entregadas, quién realizó la
+operación, en qué contenedor viajaron y cuándo regresaron.
 
-El proyecto tiene alcance académico: busca demostrar un flujo completo de inventario operativo, trazabilidad, autenticación y autorización, manteniendo las reglas importantes en el servidor. La interfaz facilita el trabajo de almacén, pero la fuente de verdad siempre es la sesión, la base de datos y el histórico de movimientos.
+El proyecto tiene alcance académico y demuestra un flujo completo de inventario operativo, trazabilidad, autenticación,
+autorización, logging y reportes. Las reglas críticas se validan en servidor; la interfaz no sustituye las reglas de
+negocio ni la autorización.
 
 ## Conceptos del dominio
 
-- **Bodega:** espacio lógico que agrupa productos y delimita el contexto operativo del usuario.
-- **Producto:** tipo de recurso administrado por una bodega, como una luminaria, consola o cable.
-- **Conjunto:** unidad física individual de un producto. Tiene un identificador global escaneable (`CON-000001`) y un estado operativo.
-- **Hoja de producción:** solicitud de recursos para un proyecto y cliente. Es la misma hoja durante preparación, salida, retorno y cierre; no existe una hoja de devolución separada.
+- **Bodega:** contexto operativo que agrupa productos y delimita las operaciones del usuario.
+- **Producto:** tipo de recurso administrado por una bodega.
+- **Conjunto:** unidad física individual de un producto, identificada con un código global como `CON-000001`.
+- **Hoja de producción:** solicitud de recursos para un proyecto. La misma hoja se utiliza durante preparación, salida,
+  retorno y cierre.
 - **Detalle de hoja:** producto y cantidades solicitadas, surtidas y devueltas.
 - **Contenedor:** recurso reutilizable con código escaneable y capacidad máxima de conjuntos.
-- **Hoja–Contenedor:** asociación temporal de un contenedor con una hoja concreta.
-- **Movimiento:** evento histórico e inmutable de `SALIDA` o `ENTRADA` sobre un conjunto.
-- **Sesión operativa:** contexto persistente que vincula al usuario autenticado con la bodega seleccionada.
+- **Hoja–Contenedor:** asociación temporal y auditable entre un contenedor y una hoja.
+- **Movimiento:** evento histórico e inmutable de `SALIDA` o `ENTRADA`.
+- **Sesión operativa:** contexto persistente que vincula al usuario autenticado con una bodega seleccionada.
 
-## Actores y alcance funcional
-
-SGREA maneja tres roles principales:
-
-- **Administrador:** administra catálogos y usuarios, además de consultar supervisión, monitoreo, reportes y operación.
-- **Supervisor:** consulta y supervisa hojas, monitoreo y reportes de su contexto autorizado.
-- **Operador:** ejecuta los flujos de almacén de surtido y recepción.
-
-El acceso efectivo también depende de la bodega asociada al usuario. Una persona puede tener varias bodegas autorizadas, pero cada operación se ejecuta dentro de una única bodega activa.
-
-## Flujos importantes
-
-### 1. Inicio de sesión y selección de bodega
-
-1. El usuario proporciona sus credenciales.
-2. El sistema rechaza credenciales incorrectas o usuarios inactivos.
-3. Se consultan las bodegas asociadas mediante la relación usuario–bodega.
-4. Si existe una sola bodega, se selecciona automáticamente; si existen varias, el usuario debe elegir una.
-5. La selección se valida en servidor y se crea el contexto operativo.
-6. Si el usuario ya tenía una sesión activa, esta se cierra antes de crear la nueva.
-
-La sesión de negocio no es equivalente al JWT: la sesión registra el contexto operativo y la auditoría de SGREA, mientras que los tokens permiten autenticar las peticiones web.
-
-### 2. Navegación por rol
-
-Después de iniciar sesión, Home muestra el contexto del usuario y la bodega activa. Las opciones se presentan según el rol:
+## Roles y alcance
 
 | Área | Administrador | Supervisor | Operador |
-| --- | --- | --- | --- |
+|---|:---:|:---:|:---:|
 | Catálogos administrativos | Sí | No | No |
-| Hojas de producción | Sí | Sí | Según operación autorizada |
+| Hojas de producción | Sí | Sí | No |
 | Monitoreo y reportes | Sí | Sí | No |
-| Surtido y recepción | Sí | No | Sí |
+| HH Surtido y HH Recepción | Sí | No | Sí |
 
-Además de la interfaz, cada operación valida en servidor la sesión, el rol cuando aplica y la pertenencia a la bodega activa.
+Una persona puede tener varias bodegas autorizadas, pero cada sesión operativa utiliza una sola bodega activa.
 
-### 3. Preparación de una hoja de producción
+La autorización real se aplica en backend mediante Spring Security. La visibilidad del menú con Thymeleaf Security es
+sólo una ayuda de presentación.
 
-El usuario autorizado crea una hoja con proyecto, cliente, fechas y bodega de sesión. Después agrega detalles de productos y cantidades solicitadas.
+## Flujo operativo
 
-Las reglas principales son:
+### Inicio de sesión
 
-- La hoja y sus productos deben pertenecer a la bodega activa.
-- Un producto no se repite dentro de la misma hoja.
-- La cantidad surtida inicia en cero.
-- La hoja se puede editar mientras su estado lo permita.
-- Al avanzar a estados operativos, la hoja pasa a un régimen de solo lectura para proteger la trazabilidad.
+1. El usuario proporciona username y contraseña.
+2. Spring Security valida las credenciales con los usuarios persistidos y BCrypt.
+3. Se rechazan credenciales inválidas y usuarios inactivos.
+4. Se cargan las bodegas autorizadas del usuario.
+5. Una única bodega se selecciona automáticamente; varias bodegas requieren selección explícita.
+6. El servidor valida nuevamente la relación Usuario–Bodega.
+7. Se cierra cualquier sesión operativa anterior del mismo usuario.
+8. Se crea una nueva `SesionEntity`.
+9. Se emiten Access Token y Refresh Token mediante cookies HttpOnly.
 
-### 4. HH Surtido y SALIDA
+La sesión de negocio y los JWT cumplen responsabilidades distintas: `SesionEntity` conserva contexto, auditoría y
+revocación; los JWT permiten reconstruir la autenticación web.
 
-El operador trabaja con la hoja desde la pantalla de Surtido (`HH Surtido`):
+### Hoja de producción
 
-1. Selecciona una hoja lista para surtir.
-2. Asigna un contenedor disponible; la relación Hoja–Contenedor registra usuario y fecha.
-3. Escanea o selecciona un conjunto físico.
-4. El sistema verifica que el conjunto esté disponible, pertenezca al producto del detalle y corresponda a la bodega de la hoja.
-5. Se valida que el contenedor aún tenga capacidad y que el conjunto no tenga una salida pendiente.
-6. Se registra un `Movimiento SALIDA` con hoja, detalle, conjunto, contenedor, usuario y fecha.
-7. La operación transaccional cambia el conjunto de `DISPONIBLE` a `SURTIDO` e incrementa `cantidadSurtida`.
+El usuario autorizado crea una hoja con proyecto, cliente, fechas y bodega activa, y posteriormente agrega sus detalles.
 
-La capacidad del contenedor, los dobles escaneos y los productos incorrectos se rechazan en el servidor; la interfaz solo proporciona retroalimentación visual.
+Reglas principales:
 
-### 5. HH Recepción y ENTRADA
+- hoja y productos deben pertenecer a la bodega activa;
+- un producto no puede repetirse dentro de la misma hoja;
+- `cantidadSurtida` y `cantidadDevuelta` se administran por los flujos operativos;
+- las hojas dejan de ser editables desde el CRUD al entrar en estados operativos.
 
-Cuando el material regresa del proyecto, el operador utiliza `HH Recepción` sobre la misma hoja:
-
-1. Consulta los conjuntos que tienen una salida pendiente.
-2. Escanea o identifica el conjunto que regresa.
-3. El sistema exige una salida previa para esa hoja y conjunto.
-4. Se resuelve el detalle correspondiente por hoja y producto.
-5. Se registra un `Movimiento ENTRADA`, que puede asociarse al contenedor de retorno o no tener contenedor.
-6. El conjunto cambia de `SURTIDO` a `DISPONIBLE` y aumenta `cantidadDevuelta`.
-7. La recepción puede ser parcial; la hoja se completa cuando todos sus detalles cumplen `cantidadDevuelta == cantidadSurtida` y se liberan las utilizaciones de contenedor que correspondan.
-
-Una entrada duplicada, una devolución sin salida previa o una cantidad superior a la surtida se rechaza y no altera el histórico.
-
-### 6. Ciclo de estados de una hoja
-
-El ciclo operativo de una hoja es:
+Ciclo implementado:
 
 ```text
-Creada -> Por surtir -> Surtiendo -> En llamado
-                                      |
-                                      v
-                              Recibiendo -> Completado
+Creada -> Por surtir -> Surtiendo -> En llamado -> Recibiendo -> Completado
 ```
 
-La salida y la recepción son etapas del mismo proceso. `Movimiento` conserva los eventos físicos, mientras `DetalleHoja` mantiene los acumulados operativos.
+### HH Surtido / SALIDA
 
-### 7. Contenedores reutilizables
+1. Seleccionar una hoja autorizada.
+2. Asignar un contenedor disponible.
+3. Escanear o seleccionar un conjunto físico.
+4. Validar bodega, producto, detalle, disponibilidad, carga abierta y capacidad.
+5. Registrar `Movimiento SALIDA`.
+6. Cambiar el conjunto de `DISPONIBLE` a `SURTIDO`.
+7. Incrementar `cantidadSurtida`.
 
-Un contenedor no pertenece permanentemente a una hoja. Se asigna temporalmente mediante `HojaContenedor`, puede utilizarse en distintas operaciones a lo largo del tiempo y conserva su historial.
+### HH Recepción / ENTRADA
 
-- Un contenedor nuevo inicia como `DISPONIBLE`.
-- Al asignarse a una carga pasa a `EN_USO`.
-- El cierre de carga y la liberación registran usuario y fecha.
-- No se permite reducir su capacidad mientras está en uso.
-- Un contenedor con historial no se elimina físicamente; debe conservarse y retirarse mediante su estado operativo.
+1. Consultar conjuntos con SALIDA pendiente.
+2. Identificar el conjunto que regresa.
+3. Exigir una SALIDA previa para esa hoja y conjunto.
+4. Resolver el detalle correspondiente.
+5. Registrar `Movimiento ENTRADA`.
+6. El retorno puede usar un contenedor distinto o no utilizar contenedor.
+7. Cambiar el conjunto de `SURTIDO` a `DISPONIBLE`.
+8. Incrementar `cantidadDevuelta`.
+9. Permitir recepciones parciales.
+10. Completar la hoja sólo cuando todo el material haya regresado y no existan utilizaciones de contenedor pendientes
+    de liberar.
 
-### 8. Monitoreo y reportes
+### Contenedores reutilizables
 
-Monitoreo presenta operaciones activas de surtido y recepción, sus hojas, contenedores, avances y tiempos derivados. Los reportes consultan hojas, movimientos, conjuntos y contenedores dentro del contexto autorizado, con exportación a Excel o PDF cuando corresponde.
+Los contenedores no pertenecen permanentemente a una hoja. Su uso se registra mediante `HojaContenedor`.
 
-Los reportes no sustituyen la trazabilidad: `Movimiento`, `SesionEntity` y `HojaContenedor` conservan la evidencia persistente de la operación.
+- nuevos contenedores inician en `DISPONIBLE`;
+- una asignación operativa los lleva a `EN_USO`;
+- cierre y liberación registran usuario y fecha;
+- un contenedor con historial no se elimina físicamente;
+- `FUERA_DE_SERVICIO` permite retirarlo de operación conservando su historial.
+
+### Monitoreo y reportes
+
+Monitoreo muestra operaciones activas de surtido y recepción, avances, contenedores y contexto de movimientos.
+
+Los reportes son de consulta y permiten salida JSON, Excel y PDF según el tipo de reporte. La trazabilidad persistente
+permanece en `Movimiento`, `SesionEntity` y `HojaContenedor`.
 
 ## Requisitos
 
 - Java JDK 17.
-- MariaDB 10.4 o superior; el esquema utilizado se validó con MariaDB 10.6.
+- MariaDB 10.4 o superior; el esquema fue validado con MariaDB 10.6.
 - Git.
-- Conexión a Internet únicamente durante la primera descarga de dependencias Maven, si no están disponibles localmente.
 - Cliente MariaDB (`mariadb` o `mysql`) para restaurar el esquema.
+- Conexión a Internet sólo cuando Maven necesite descargar dependencias que no estén disponibles localmente.
 
 No es necesario instalar Maven: el proyecto incluye Maven Wrapper (`mvnw` y `mvnw.cmd`).
 
-## Configuración de la base de datos
+## Base de datos
 
-La aplicación espera una base llamada `sgrea` en `localhost:3306` y utiliza `spring.jpa.hibernate.ddl-auto=validate`; Hibernate no crea ni modifica tablas automáticamente.
+La aplicación usa una base `sgrea` y `spring.jpa.hibernate.ddl-auto=validate`. Hibernate valida el esquema existente y
+no crea ni modifica tablas.
 
-1. Crear una base vacía:
+Crear una base vacía:
 
-   ```sql
-   CREATE DATABASE sgrea CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
-
-2. Restaurar el esquema vigente en una base vacía:
-
-   ```text
-   mariadb -u <usuario> -p sgrea < docs/esquema-actual.sql
-   ```
-
-   El archivo `docs/esquema-actual.sql` es la fuente de verdad del esquema físico. Contiene instrucciones `DROP TABLE`; no debe ejecutarse sobre una base con datos que se quieran conservar.
-
-3. Verificar que el usuario tenga permisos sobre `sgrea`.
-
-El proyecto no documenta credenciales reales. Se recomienda proporcionar usuario y contraseña mediante variables de entorno o una configuración externa.
-
-Al restaurar el dump se crea una cuenta académica inicial para poder acceder al sistema:
-
-```text
-Usuario:    admin
-Contraseña: 12345
-Bodega:     Bodega General
-Rol:        Administrador
+```sql
+CREATE DATABASE sgrea CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-Esta contraseña es únicamente para el arranque local del proyecto. Debe cambiarse o desactivarse después del primer acceso en cualquier entorno que no sea una demostración académica.
+Restaurar el esquema:
+
+```text
+mariadb -u <usuario> -p sgrea < docs/esquema-actual.sql
+```
+
+> `docs/esquema-actual.sql` contiene `DROP TABLE` y está pensado para preparar una base de demostración vacía.
+
+El dump incluye datos académicos mínimos de catálogos y una cuenta inicial de demostración. Esa cuenta existe
+exclusivamente para arranque local y debe cambiarse o desactivarse después del primer acceso fuera de una demostración.
+
+La cuenta bootstrap actual es:
+
+```text
+Usuario: admin
+Contraseña: 12345
+Bodega: Bodega General
+Rol: Administrador
+```
+
+> Esta contraseña bootstrap proviene del seed SQL y no representa la política actual del CRUD de usuarios. Los usuarios
+> creados desde la aplicación deben cumplir la longitud mínima configurada por el sistema.
+
+Las credenciales reales de MariaDB no se almacenan en el repositorio.
 
 ## Variables de entorno
 
-El JWT requiere un secreto de al menos 32 bytes. En desarrollo local puede configurarse así en PowerShell:
+El archivo `.env.example` documenta las variables requeridas. Spring Boot no carga `.env` automáticamente; las
+variables deben exportarse en la terminal, configurarse en el IDE o proporcionarse mediante el entorno de ejecución.
 
-El archivo `.env.example` contiene la plantilla de variables requeridas. Spring Boot no carga archivos `.env` automáticamente; deben exportarse en la terminal, configurarse en el IDE o mediante el mecanismo de configuración del entorno.
+Ejemplo en PowerShell:
 
 ```powershell
 $env:SGREA_JWT_SECRET = "cambia-este-secreto-por-uno-de-32-bytes-o-mas"
 $env:SGREA_JWT_ACCESS_EXPIRATION_MS = "900000"
 $env:SGREA_JWT_REFRESH_EXPIRATION_MS = "604800000"
 $env:SGREA_JWT_COOKIE_SECURE = "false"
-```
 
-Para sobrescribir la conexión local sin modificar `application.properties`:
-
-```powershell
-$env:SPRING_DATASOURCE_URL = "jdbc:mariadb://localhost:3306/sgrea?useSSL=false&serverTimezone=UTC"
 $env:SPRING_DATASOURCE_USERNAME = "<usuario-mariadb>"
 $env:SPRING_DATASOURCE_PASSWORD = "<contraseña-mariadb>"
 ```
 
-En un entorno HTTPS, cambiar `SGREA_JWT_COOKIE_SECURE` a `true`. No subir secretos, contraseñas, cookies, JWT ni refresh tokens al repositorio.
+Opcionalmente puede sobrescribirse también `SPRING_DATASOURCE_URL`.
+
+El secreto JWT debe tener al menos 32 bytes. En HTTPS debe utilizarse:
+
+```text
+SGREA_JWT_COOKIE_SECURE=true
+```
+
+No subir secretos, contraseñas de infraestructura, cookies, JWT ni Refresh Tokens al repositorio.
 
 ## Ejecutar localmente
 
@@ -199,47 +195,47 @@ New-Item -ItemType Directory -Force logs | Out-Null
 .\mvnw.cmd spring-boot:run
 ```
 
-La aplicación quedará disponible en:
+Aplicación:
 
 ```text
 http://localhost:8080/
 ```
 
-Las imágenes de productos se almacenan en `uploads/productos` y se sirven mediante `/uploads/productos/**`. Los logs se escriben en consola y en `logs/sgrea.log`; esta carpeta está excluida de Git.
-
-Para detener la aplicación, presionar `Ctrl+C` en la terminal donde se está ejecutando.
+Las imágenes se almacenan en `uploads/productos` y los logs en `logs/sgrea.log`. Ambos directorios están excluidos de
+Git.
 
 ## Compilar y probar
 
-Compilar el proyecto:
+Compilar:
 
 ```powershell
 .\mvnw.cmd clean package
 ```
 
-Ejecutar todas las pruebas:
+Pruebas:
 
 ```powershell
 .\mvnw.cmd test
 ```
 
-Las pruebas de integración que levantan el contexto Spring requieren que MariaDB esté disponible y que la base `sgrea` sea compatible con el DDL vigente.
-
-Ejecutar una prueba específica:
-
-```powershell
-.\mvnw.cmd '-Dtest=SecurityErrorPageTest' test
-```
+Las pruebas que levantan el contexto Spring requieren una instancia MariaDB compatible con `docs/esquema-actual.sql`.
 
 ## Seguridad
 
-- Spring Security protege vistas Thymeleaf y endpoints.
-- La autenticación utiliza los usuarios persistidos en SGREA y hashes BCrypt.
-- Los roles se expresan como `ROLE_ADMINISTRADOR`, `ROLE_SUPERVISOR` y `ROLE_OPERADOR`.
-- El Access Token y el Refresh Token se transportan mediante cookies.
-- CSRF permanece habilitado porque la autenticación usa cookies.
-- El logout finaliza la sesión operativa e invalida el contexto de autenticación.
-- Las páginas personalizadas de error cubren `403`, `404`, `400` procesado por Spring y los fallos `5xx` gestionados por la aplicación.
+La implementación actual incluye:
+
+- Spring Security;
+- usuarios persistidos y BCrypt;
+- `ROLE_ADMINISTRADOR`, `ROLE_SUPERVISOR` y `ROLE_OPERADOR`;
+- Thymeleaf Security;
+- Access JWT en cookie HttpOnly;
+- Refresh JWT en cookie HttpOnly;
+- rotación y revocación de Refresh Token mediante `SesionEntity`;
+- CSRF habilitado para formularios y peticiones mutables;
+- logout con cierre de sesión operativa, limpieza del `SecurityContext` y expiración de cookies.
+
+`POST /refresh` puede ejecutarse sin un Access Token válido porque su propósito es renovar la autenticación, pero sigue
+requiriendo CSRF y un Refresh Token válido asociado a una sesión activa.
 
 ## Estructura principal
 
@@ -266,11 +262,12 @@ docs/
 ## Documentación relacionada
 
 - [Entity and Business Rules Specification](docs/entity-specification.md)
+- `docs/esquema-actual.sql` — baseline físico de persistencia.
 
 ## Consideraciones de desarrollo
 
-- No cambiar el prefijo de Thymeleaf: `classpath:/paginas/`.
-- No sustituir `ddl-auto=validate` por `create`, `create-drop` o `update` en un entorno con datos.
-- Mantener la validación de bodega, sesión operativa y reglas de negocio en servidor.
-- No registrar contraseñas, hashes, JWT completos, refresh tokens, secretos ni cookies completas.
-- Antes de modificar el esquema, actualizar el DDL vigente y la documentación correspondiente.
+- Mantener `spring.thymeleaf.prefix=classpath:/paginas/`.
+- No cambiar `ddl-auto=validate` por `create`, `create-drop` o `update` en un entorno con datos.
+- Mantener reglas de bodega, sesión operativa y autorización en servidor.
+- No registrar passwords, hashes BCrypt, JWT completos, Refresh Tokens, secretos o cookies completas.
+- Reflejar cualquier cambio de esquema primero en el DDL y en la documentación correspondiente.
