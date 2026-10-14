@@ -1,11 +1,11 @@
 package dgtic.core.service;
 
 import dgtic.core.mapping.Mapper;
-import dgtic.core.model.dto.BodegaDTO;
-import dgtic.core.model.dto.BodegaAsociacionDTO;
-import dgtic.core.model.dto.UsuarioDTO;
-import dgtic.core.model.dto.UsuarioAltaDTO;
-import dgtic.core.model.dto.UsuarioEdicionDTO;
+import dgtic.core.model.dto.catalogo.BodegaDTO;
+import dgtic.core.model.dto.catalogo.BodegaAsociacionDTO;
+import dgtic.core.model.dto.catalogo.UsuarioDTO;
+import dgtic.core.model.dto.catalogo.UsuarioAltaDTO;
+import dgtic.core.model.dto.catalogo.UsuarioEdicionDTO;
 import dgtic.core.model.entity.BodegaEntity;
 import dgtic.core.model.entity.RolCatalogo;
 import dgtic.core.model.entity.RolEntity;
@@ -144,7 +144,7 @@ public class UsuarioService {
                 .nombre(dto.getNombre().trim())
                 .username(dto.getUsername().trim())
                 .password(passwordEncoder.encode(dto.getPassword()))
-                .activo(true)
+                .activo(dto.getActivo())
                 .rol(rol)
                 .build();
         usuario = usuarioRepository.save(usuario);

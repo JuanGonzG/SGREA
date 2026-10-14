@@ -1,8 +1,8 @@
 package dgtic.core.controller;
 
-import dgtic.core.model.dto.ConjuntoAltaDTO;
-import dgtic.core.model.dto.ConjuntoDTO;
-import dgtic.core.model.dto.ConjuntoEdicionDTO;
+import dgtic.core.model.dto.catalogo.ConjuntoAltaDTO;
+import dgtic.core.model.dto.catalogo.ConjuntoDTO;
+import dgtic.core.model.dto.catalogo.ConjuntoEdicionDTO;
 import dgtic.core.service.ConjuntoService;
 import dgtic.core.service.ProductoService;
 import dgtic.core.service.SesionService;

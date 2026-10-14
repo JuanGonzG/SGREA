@@ -1,8 +1,8 @@
 package dgtic.core.service;
 
 import dgtic.core.mapping.Mapper;
-import dgtic.core.model.dto.BodegaDTO;
-import dgtic.core.model.dto.ProductoDTO;
+import dgtic.core.model.dto.catalogo.BodegaDTO;
+import dgtic.core.model.dto.catalogo.ProductoDTO;
 import dgtic.core.model.entity.ProductoEntity;
 import lombok.extern.slf4j.Slf4j;
 import dgtic.core.repository.ProductoRepository;

@@ -1,8 +1,8 @@
 package dgtic.core.controller;
 
-import dgtic.core.model.dto.ContenedorAltaDTO;
-import dgtic.core.model.dto.ContenedorDTO;
-import dgtic.core.model.dto.ContenedorEdicionDTO;
+import dgtic.core.model.dto.catalogo.ContenedorAltaDTO;
+import dgtic.core.model.dto.catalogo.ContenedorDTO;
+import dgtic.core.model.dto.catalogo.ContenedorEdicionDTO;
 import dgtic.core.service.ContenedorService;
 import dgtic.core.service.SesionService;
 import jakarta.servlet.http.HttpSession;

@@ -3,10 +3,14 @@ package dgtic.core.controller;
 import dgtic.core.model.dto.monitoreo.MonitoreoHojaDTO;
 import dgtic.core.service.MonitoreoService;
 import dgtic.core.service.SesionService;
+import dgtic.core.security.TokenCookieService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.ui.Model;
 
 import java.util.List;
@@ -19,6 +23,9 @@ public class HomeController {
     @Autowired
     private MonitoreoService monitoreoService;
 
+    @Autowired
+    private TokenCookieService tokenCookieService;
+    // Maneja la solicitud GET para la página de inicio
     @GetMapping("/")
     public String inicio(HttpSession session, Model model){
         // Verificar si hay una sesión activa en el servidor
@@ -61,20 +68,21 @@ public class HomeController {
 
         return "home/home";
     }
-
-    @GetMapping("/logout")
-    public String cerrarSesion(HttpSession session) {
-        // Cerrar la sesión en la base de datos con los datos de la sesión actual
-        Boolean sesionCerrada = sesionService.closeSesion((Integer) session.getAttribute("idUsuario"), (Integer) session.getAttribute("idSesion"), (String) session.getAttribute("token"));
-
-        if (!sesionCerrada) {
-            // Manejar el caso en que la sesión no se pudo cerrar correctamente
-            // Por ejemplo, podrías redirigir a una página de error o mostrar un mensaje
-            return "error/error"; // Asegúrate de tener una vista de error adecuada
+    // Maneja la solicitud POST para cerrar sesión
+    @PostMapping("/logout")
+    public String cerrarSesion(HttpSession session, HttpServletResponse response) {
+        // Obtener el idUsuario y idSesion desde la sesión
+        Integer idUsuario = (Integer) session.getAttribute("idUsuario");
+        Integer idSesion = (Integer) session.getAttribute("idSesion");
+        // Si ambos valores son no nulos, cerrar la sesión en el servicio de sesiones
+        if (idUsuario != null && idSesion != null) {
+            sesionService.closeSesion(idUsuario, idSesion);
         }
-
-        // Eliminar los atributos de la sesión
+        // Limpiar el contexto de seguridad y invalidar la sesión
+        SecurityContextHolder.clearContext();
         session.invalidate();
+        // Expirar las cookies de token JWT y Refresh Token
+        tokenCookieService.expireTokenCookies(response);
         return "redirect:/login";
     }
 }

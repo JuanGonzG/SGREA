@@ -1,7 +1,7 @@
 package dgtic.core.service;
 
 import dgtic.core.mapping.Mapper;
-import dgtic.core.model.dto.SesionDTO;
+import dgtic.core.model.dto.seguridad.SesionDTO;
 import dgtic.core.model.entity.BodegaEntity;
 import dgtic.core.model.entity.SesionEntity;
 import dgtic.core.model.entity.UsuarioEntity;
@@ -36,10 +36,12 @@ public class SesionService {
 
             //Si existe, finalizarla
             if(sesionActiva.isPresent()){
+                // Cerrar la sesión activa existente
                 SesionEntity sesionExpirada = sesionActiva.get();
+                // Marcar la sesión como inactiva y establecer la fecha de fin
                 sesionExpirada.setActiva(false);
                 sesionExpirada.setFechaFin(LocalDateTime.now());
-
+                // Guardar los cambios en la base de datos
                 sesionRepository.save(sesionExpirada);
                 log.info("Sesión previa cerrada usuarioId={}, username={}",
                         idUsuario, sesionExpirada.getUsuario().getUsername());
@@ -64,7 +66,7 @@ public class SesionService {
                     .fechaFin(null)
                     .activa(true)
                     .build();
-
+            // Guardar la nueva sesión en la base de datos
             nuevaSesion = sesionRepository.save(nuevaSesion);
             log.info("Nueva sesión creada usuarioId={}, username={}, bodegaId={}",
                     idUsuario, usuario.get().getUsername(), idBodega);
@@ -99,6 +101,40 @@ public class SesionService {
             log.error("Error inesperado al cerrar sesión usuarioId={}, sesionId={}",
                     idUsuario, idSesion, e);
             throw new RuntimeException("Error al cerrar la sesión");
+        }
+    }
+    // Cerrar la sesión activa de un usuario específico por idSesion
+    @Transactional
+    public Boolean closeSesion(Integer idUsuario, Integer idSesion) {
+        try {
+            // Buscar la sesión por idSesion
+            Optional<SesionEntity> sesionOpt = sesionRepository.findById(idSesion);
+            if (sesionOpt.isEmpty()) {
+                log.warn("Cierre de sesión rechazado: sesión no encontrada sesionId={}", idSesion);
+                return false;
+            }
+            // Verificar que la sesión esté activa y que el usuario coincida
+            SesionEntity sesion = sesionOpt.get();
+            if (!Boolean.TRUE.equals(sesion.getActiva())
+                    || sesion.getUsuario() == null
+                    || !idUsuario.equals(sesion.getUsuario().getIdUsuario())) {
+                log.warn("Cierre de sesión rechazado: sesión inactiva o usuario inconsistente sesionId={}, usuarioId={}",
+                        idSesion, idUsuario);
+                return false;
+            }
+            // Cerrar la sesión
+            sesion.setActiva(false);
+            // Establecer la fecha de fin de la sesión
+            sesion.setFechaFin(LocalDateTime.now());
+            // Guardar los cambios en la base de datos
+            sesionRepository.save(sesion);
+            log.info("Sesión cerrada usuarioId={}, username={}",
+                    idUsuario, sesion.getUsuario().getUsername());
+            return true;
+        } catch (RuntimeException exception) {
+            log.error("Error inesperado al cerrar sesión sesionId={}, usuarioId={}",
+                    idSesion, idUsuario, exception);
+            throw new RuntimeException("Error al cerrar la sesión", exception);
         }
     }
 

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{master :: layout(~{::main}, 'SGREA | Acceso denegado')}">
+<main class="error-forbidden-overlay" role="main">
+    <div class="card error-card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-shield-lock error-icon" aria-hidden="true"></i>
+            <div class="error-code mt-3">403</div>
+            <h1 class="h4 mt-3">Acceso denegado</h1>
+            <p class="text-muted mb-2">Permisos insuficientes</p>
+            <p class="text-muted mb-4">
+                Tu rol o contexto de bodega no permite realizar esta operación.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a th:href="@{/}" class="btn btn-primary">
+                    <i class="bi bi-house me-1" aria-hidden="true"></i>Ir al inicio
+                </a>
+                <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Regresar
+                </button>
+            </div>
+    </div>
+</main>
+</html>

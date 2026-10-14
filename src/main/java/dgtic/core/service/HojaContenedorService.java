@@ -1,8 +1,8 @@
 package dgtic.core.service;
 
 import dgtic.core.mapping.Mapper;
-import dgtic.core.model.dto.HojaContenedorAsignacionDTO;
-import dgtic.core.model.dto.HojaContenedorDTO;
+import dgtic.core.model.dto.operacion.HojaContenedorAsignacionDTO;
+import dgtic.core.model.dto.operacion.HojaContenedorDTO;
 import dgtic.core.model.entity.ContenedorEntity;
 import dgtic.core.model.entity.EstadoContenedorEntity;
 import dgtic.core.model.entity.HojaContenedorEntity;

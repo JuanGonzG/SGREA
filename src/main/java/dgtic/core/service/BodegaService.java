@@ -6,7 +6,7 @@ import dgtic.core.repository.ProductoRepository;
 import dgtic.core.repository.SesionRepository;
 import dgtic.core.repository.UsuarioBodegaRepository;
 import dgtic.core.mapping.Mapper;
-import dgtic.core.model.dto.BodegaDTO;
+import dgtic.core.model.dto.catalogo.BodegaDTO;
 import dgtic.core.model.entity.BodegaEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

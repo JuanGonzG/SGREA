@@ -1,6 +1,10 @@
 package dgtic.core.mapping;
 
-import dgtic.core.model.dto.*;
+import dgtic.core.model.dto.catalogo.*;
+import dgtic.core.model.dto.operacion.*;
+import dgtic.core.model.dto.seguridad.*;
+import dgtic.core.model.dto.hh.surtido.*;
+import dgtic.core.model.dto.hh.recepcion.*;
 import dgtic.core.model.dto.monitoreo.MonitoreoContenedorDTO;
 import dgtic.core.model.dto.monitoreo.MonitoreoDetalleDTO;
 import dgtic.core.model.dto.monitoreo.MonitoreoEstadoDTO;
